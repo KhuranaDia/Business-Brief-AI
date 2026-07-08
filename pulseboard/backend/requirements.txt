@@ -1,0 +1,2 @@
+# Python dependencies for PulseBoard backend
+# TODO: add fastapi, uvicorn, sqlalchemy, psycopg2, httpx, etc.
