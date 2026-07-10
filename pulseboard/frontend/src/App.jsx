@@ -115,6 +115,21 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
+      <footer style={{
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        padding: '16px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 'auto'
+      }}>
+        <span style={{fontSize: '12px', color: '#374151'}}>
+          © 2026 Team Cogent · AMD Developer Hackathon ACT II
+        </span>
+        <span style={{fontSize: '12px', color: '#374151'}}>
+          Powered by <span style={{color: '#E8173D'}}>AMD Developer Cloud</span> · Fireworks AI · LLaMA 3.1 70B
+        </span>
+      </footer>
     </div>
   );
 }

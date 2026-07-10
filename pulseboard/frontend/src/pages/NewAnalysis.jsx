@@ -21,6 +21,25 @@ export default function NewAnalysis() {
 
   const error = localError || gen.error || csv.error;
 
+  const handleDemoData = async () => {
+    setLocalError("");
+    const demoData = {
+      "revenue": {"yesterday": 8450, "day_before": 9800, "weekly_avg": 9200, "currency": "USD", "refunds_today": 1240, "failed_payments": 89},
+      "users": {"active_today": 1243, "active_yesterday": 1891, "churned_this_week": 47, "new_signups_today": 12},
+      "errors": {"error_rate_percent": 8.3, "normal_error_rate": 0.8, "checkout_failures": 143, "api_timeouts": 67, "peak_error_time": "11:30 PM"},
+      "sentiment": {"support_tickets_today": 28, "normal_tickets_per_day": 6, "nps_score": 31, "nps_last_month": 58, "top_complaint": "checkout not working on mobile"}
+    };
+    const title = "Acme SaaS — Crisis Scenario";
+    setBusinessName(title);
+    setPhase("analyzing");
+    try {
+      const res = await gen.generate(demoData, title);
+      setAnalysis(res);
+      setPhase("done");
+      setTimeout(() => navigate(`/brief/${res.id}`), 2600);
+    } catch { setPhase("form"); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError("");
@@ -90,6 +109,24 @@ export default function NewAnalysis() {
             </div>
 
             <div>
+              <button type="button" onClick={handleDemoData} style={{
+                width: '100%',
+                padding: '14px',
+                marginBottom: '16px',
+                background: 'rgba(232,23,61,0.08)',
+                border: '1px solid rgba(232,23,61,0.3)',
+                borderRadius: '10px',
+                color: '#E8173D',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}>
+                ⚡ Try Crisis Scenario Demo Data
+              </button>
               <div className="flex p-1 bg-bg-primary/50 rounded-xl border border-bg-border w-fit mb-4">
                 <button
                   type="button"

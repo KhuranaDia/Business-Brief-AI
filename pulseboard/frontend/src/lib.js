@@ -71,14 +71,15 @@ export function formatTimestamp(iso) {
 
 export function primaryStory(text) {
   if (!text) return "";
+  const strip = (s) => s.replace(/\*\*/g, "");
   const lines = text.split("\n").map((l) => l.trim());
   const idx = lines.findIndex((l) => /^\**\s*executive summary\s*\**:?/i.test(l));
   if (idx !== -1) {
     const inline = lines[idx]
       .replace(/^\**\s*executive summary\s*\**:?/i, "")
       .trim();
-    if (inline) return inline;
-    return lines.slice(idx + 1).find((l) => l) || "";
+    if (inline) return strip(inline);
+    return strip(lines.slice(idx + 1).find((l) => l) || "");
   }
-  return lines.find((l) => l && !/^\**[A-Z][A-Z \/&]{2,}\**:?$/.test(l)) || "";
+  return strip(lines.find((l) => l && !/^\**[A-Z][A-Z \/&]{2,}\**:?$/.test(l)) || "");
 }

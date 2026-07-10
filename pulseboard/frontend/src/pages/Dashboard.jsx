@@ -160,7 +160,7 @@ export default function Dashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Analyses Run" value={stats.total} sub="Lifetime total" color="#6366F1" />
-        <StatCard label="Avg Processing" value={`${stats.avg}s`} sub="Multi-agent latency" color="#F59E0B" trend={-12} />
+        <StatCard label="Avg Processing" value={`${stats.avg}s`} sub="5 agents · AMD parallel compute" color="#F59E0B" trend={-12} />
         <StatCard label="Data Sources" value={new Set(briefs.map(b => b.data_source_name)).size} sub="Unique connections" color="#10B981" />
         <StatCard label="Anomalies" value={latest.anomalies?.length || 0} sub="In latest brief" color="#EF4444" trend={5} />
       </div>

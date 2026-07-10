@@ -93,6 +93,32 @@ export default function Settings() {
             </label>
           </section>
 
+          <div style={{marginTop: '32px', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.06)'}}>
+            <h3 style={{color: 'white', fontWeight: '600', marginBottom: '16px'}}>Infrastructure</h3>
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '16px'}}>
+                <div style={{fontSize: '11px', color: '#6B7280', marginBottom: '4px'}}>COMPUTE</div>
+                <div style={{color: 'white', fontWeight: '500'}}>AMD Developer Cloud</div>
+                <div style={{fontSize: '12px', color: '#10B981', marginTop: '4px'}}>● Connected</div>
+              </div>
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '16px'}}>
+                <div style={{fontSize: '11px', color: '#6B7280', marginBottom: '4px'}}>LLM INFERENCE</div>
+                <div style={{color: 'white', fontWeight: '500'}}>Fireworks AI · LLaMA 3.1 70B</div>
+                <div style={{fontSize: '12px', color: '#10B981', marginTop: '4px'}}>● Active</div>
+              </div>
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '16px'}}>
+                <div style={{fontSize: '11px', color: '#6B7280', marginBottom: '4px'}}>AGENT FRAMEWORK</div>
+                <div style={{color: 'white', fontWeight: '500'}}>5 Parallel Agents</div>
+                <div style={{fontSize: '12px', color: '#6B7280', marginTop: '4px'}}>asyncio.gather()</div>
+              </div>
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '16px'}}>
+                <div style={{fontSize: '11px', color: '#6B7280', marginBottom: '4px'}}>CONTAINERIZATION</div>
+                <div style={{color: 'white', fontWeight: '500'}}>Docker + Compose</div>
+                <div style={{fontSize: '12px', color: '#6B7280', marginTop: '4px'}}>Submission ready</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </motion.div>
     </div>
