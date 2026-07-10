@@ -73,7 +73,9 @@ async def run(
         f"AGENT FINDINGS:\n{findings_json}"
     )
     patterns = as_dict(
-        await call_llm_json(pattern_prompt, system_prompt=SYSTEM_PROMPT)
+        await call_llm_json(
+            pattern_prompt, system_prompt=SYSTEM_PROMPT, agent_name=AGENT_NAME
+        )
     )
 
     # Step 2: write the final plain-English brief.

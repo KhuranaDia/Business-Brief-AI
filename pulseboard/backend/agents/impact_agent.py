@@ -54,7 +54,9 @@ async def run(brief: dict[str, Any]) -> dict[str, Any]:
         f"BRIEF AND FINDINGS:\n{json.dumps(context, default=str)[:9000]}"
     )
 
-    impact = as_dict(await call_llm_json(prompt, system_prompt=SYSTEM_PROMPT))
+    impact = as_dict(
+        await call_llm_json(prompt, system_prompt=SYSTEM_PROMPT, agent_name=AGENT_NAME)
+    )
 
     priority = str(impact.get("priority", "medium")).lower().strip()
     if priority not in _ALLOWED_PRIORITIES:

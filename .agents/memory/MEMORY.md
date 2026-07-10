@@ -1,1 +1,2 @@
 - [Tailwind v3 @apply opacity gotcha](tailwind-v3-apply-opacity.md) — custom-color `/opacity` inside @apply 500s index.css and blanks the whole PulseBoard frontend; use rgba/CSS vars instead.
+- [Fireworks reasoning-model empty content](fireworks-reasoning-empty-content.md) — empty/garbled LLM output must degrade to a local fallback (HTTP 200), never crash /api/analyze.

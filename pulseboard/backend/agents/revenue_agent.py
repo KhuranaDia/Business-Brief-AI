@@ -43,7 +43,9 @@ async def run(data: Any) -> dict[str, Any]:
         "Only include values actually present in the data.\n\n"
         f"DATA:\n{raw}"
     )
-    signals = await call_llm_json(extract_prompt, system_prompt=SYSTEM_PROMPT)
+    signals = await call_llm_json(
+        extract_prompt, system_prompt=SYSTEM_PROMPT, agent_name=AGENT_NAME
+    )
 
     # Phase 2: analyze trends and anomalies from the extracted signals.
     analyze_prompt = (
@@ -57,7 +59,9 @@ async def run(data: Any) -> dict[str, Any]:
         f"REVENUE SIGNALS:\n{json.dumps(signals, default=str)}"
     )
     analysis = as_dict(
-        await call_llm_json(analyze_prompt, system_prompt=SYSTEM_PROMPT)
+        await call_llm_json(
+            analyze_prompt, system_prompt=SYSTEM_PROMPT, agent_name=AGENT_NAME
+        )
     )
 
     severity = str(analysis.get("severity", "normal")).lower()
