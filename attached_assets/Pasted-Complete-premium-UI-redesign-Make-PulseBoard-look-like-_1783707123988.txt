@@ -1,0 +1,294 @@
+Complete premium UI redesign. Make PulseBoard look like a $10M funded startup product.
+Dark, glassmorphism cards, subtle 3D depth, smooth animations. 
+Inspired by: Linear, Vercel Dashboard, Raycast, Stripe.
+
+DESIGN SYSTEM:
+
+Colors:
+--bg-base: #05050F
+--bg-card: rgba(255,255,255,0.03)
+--bg-card-hover: rgba(255,255,255,0.06)
+--border: rgba(255,255,255,0.08)
+--border-hover: rgba(232,23,61,0.4)
+--brand: #E8173D
+--brand-glow: rgba(232,23,61,0.15)
+--text-primary: #F0F0FA
+--text-secondary: #6B7280
+--text-muted: #374151
+--success: #10B981
+--warning: #F59E0B
+--critical: #EF4444
+--info: #6366F1
+
+Add to index.html head:
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
+
+Replace index.css with:
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #05050F;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,23,61,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(99,102,241,0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: #F0F0FA;
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(232,23,61,0.3); border-radius: 2px; }
+
+::selection { background: rgba(232,23,61,0.3); color: white; }
+
+NAVBAR — App.jsx:
+Replace navbar with:
+- position: fixed, top 0, full width, z-50
+- background: rgba(5,5,15,0.8)
+- backdrop-filter: blur(20px) saturate(180%)
+- border-bottom: 1px solid rgba(255,255,255,0.06)
+- height: 56px, px-6, flex items-center justify-between
+
+Left side:
+- SVG pulse/heartbeat icon 20px in #E8173D
+- "PULSE" text-sm font-bold tracking-[0.2em] text-white
+- "BOARD" text-sm font-bold tracking-[0.2em] text-[#E8173D]
+- Separator: w-px h-4 bg-white/10 mx-4
+- "autonomous intelligence" text-xs text-[#374151] tracking-wider
+
+Right side:
+- "+ New Analysis" button:
+  background: linear-gradient(135deg, #E8173D, #FF4060)
+  border: none
+  color: white
+  px-4 py-2 rounded-lg text-xs font-semibold tracking-wide
+  box-shadow: 0 0 20px rgba(232,23,61,0.25)
+  hover: box-shadow 0 0 30px rgba(232,23,61,0.4), translateY(-1px)
+  transition: all 200ms cubic-bezier(0.4,0,0.2,1)
+
+Add pt-14 to main content to account for fixed navbar.
+
+DASHBOARD — Dashboard.jsx:
+Full rewrite:
+
+Background grid overlay:
+Add subtle dot grid behind content:
+<div style={{
+  position: 'fixed', inset: 0, zIndex: 0,
+  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+  backgroundSize: '32px 32px',
+  pointerEvents: 'none'
+}} />
+
+STATS CARDS (4 in a row, responsive — 2x2 on mobile):
+Each card:
+background: rgba(255,255,255,0.03)
+border: 1px solid rgba(255,255,255,0.08)
+border-radius: 16px
+padding: 24px
+backdrop-filter: blur(10px)
+box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)
+transition: all 300ms cubic-bezier(0.4,0,0.2,1)
+transform-style: preserve-3d
+
+Hover effect (add via onMouseMove for 3D tilt):
+Calculate mouse position relative to card center
+Apply: transform: perspective(1000px) rotateX(Xdeg) rotateY(Ydeg) translateZ(4px)
+Max rotation: 8 degrees
+On mouse leave: transform: perspective(1000px) rotateX(0) rotateY(0) translateZ(0)
+
+Card content:
+- Top: label text-[10px] font-semibold tracking-[0.15em] text-[#4B5563] uppercase
+- Value: text-3xl font-bold text-white mt-2 mb-1 (use tabular-nums)
+- Bottom: subtext text-xs text-[#374151]
+- Right side: icon with colored glow circle behind it
+
+SECTION HEADER:
+<div class="flex items-center gap-3 mb-4">
+  <span class="text-[11px] font-semibold tracking-[0.15em] text-[#4B5563] uppercase">Recent Intelligence</span>
+  <div class="flex-1 h-px bg-white/5"></div>
+  <div class="flex items-center gap-1.5">
+    <div class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></div>
+    <span class="text-[10px] text-[#374151]">live</span>
+  </div>
+</div>
+
+BRIEF CARDS:
+Each card — glass morphism with colored left accent:
+
+background: rgba(255,255,255,0.02)
+border: 1px solid rgba(255,255,255,0.06)
+border-radius: 16px
+padding: 20px 24px
+position: relative
+overflow: hidden
+transition: all 250ms cubic-bezier(0.4,0,0.2,1)
+cursor: pointer
+
+Left accent bar: absolute, left 0, top 0, bottom 0, w-[3px]
+- CRITICAL: background linear-gradient(to bottom, #EF4444, #EF444400)
+- WARNING: linear-gradient(to bottom, #F59E0B, #F59E0B00)
+- HEALTHY: linear-gradient(to bottom, #10B981, #10B98100)
+
+Subtle glow on hover:
+- CRITICAL hover: box-shadow 0 0 40px rgba(239,68,68,0.08)
+- WARNING hover: box-shadow 0 0 40px rgba(245,158,11,0.08)
+- HEALTHY hover: box-shadow 0 0 40px rgba(16,185,129,0.08)
+
+Top shine effect (pseudo element):
+position absolute, top 0, left 0, right 0, height 1px
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)
+
+Card content:
+Row 1: 
+- Business name: text-sm font-semibold text-white
+- Timestamp: text-xs text-[#374151] 
+
+Row 2 (mt-2):
+- Preview text: text-sm text-[#6B7280] line-clamp-1
+
+Row 3 (mt-3, flex justify-between):
+- Status pill: tiny, colored
+- "View brief →": text-xs text-[#E8173D] opacity-0 group-hover:opacity-100 transition
+
+Expanded state:
+max-height: 0 → auto with transition
+Brief content rendered with proper hierarchy
+
+AGENT ACTIVITY — AgentActivity.jsx:
+2x2 grid (1 col mobile):
+
+Each agent card:
+background: rgba(255,255,255,0.02)
+border: 1px solid rgba(255,255,255,0.06)
+border-radius: 16px
+padding: 20px
+
+ANALYZING state:
+animation: borderPulse 2s ease-in-out infinite
+@keyframes borderPulse {
+  0%, 100% { border-color: rgba(255,255,255,0.06); box-shadow: none; }
+  50% { border-color: rgba(232,23,61,0.5); box-shadow: 0 0 20px rgba(232,23,61,0.1); }
+}
+
+Agent icons — colored SVG in circle:
+- Revenue: bg rgba(16,185,129,0.1), icon color #10B981
+- Behavior: bg rgba(99,102,241,0.1), icon color #6366F1
+- Error: bg rgba(245,158,11,0.1), icon color #F59E0B
+- Sentiment: bg rgba(139,92,246,0.1), icon color #8B5CF6
+
+COMPLETE state: border rgba(16,185,129,0.2), subtle green glow
+
+Bottom section "Synthesis agent":
+background: rgba(232,23,61,0.05)
+border: 1px solid rgba(232,23,61,0.15)
+border-radius: 12px, p-4, mt-4
+Animated gradient text: "Synthesizing insights..."
+
+BRIEF CARD — BriefCard.jsx:
+background: rgba(255,255,255,0.02)
+border: 1px solid rgba(255,255,255,0.08)
+border-radius: 20px
+padding: 32px
+box-shadow: 0 24px 48px rgba(0,0,0,0.4)
+
+Top status banner:
+full width, rounded-t-20, p-3
+CRITICAL: background rgba(239,68,68,0.08), border-bottom 1px solid rgba(239,68,68,0.15)
+Center: colored dot + status text + "Business is under stress" subtext
+
+Brief text sections:
+Section label: text-[10px] font-bold tracking-[0.2em] text-[#E8173D] uppercase mt-6 mb-2
+Content: text-sm text-[#9CA3AF] leading-[1.8]
+Bullets: custom red dot, text-sm text-[#D1D5DB]
+
+Bottom bar:
+border-top: 1px solid rgba(255,255,255,0.05)
+pt-4 mt-6 flex justify-between items-center
+Left: "⚡ Generated in Xs" text-xs text-[#374151]
+Right: Copy button — glass style, text-xs
+
+UPLOAD PAGE — UploadPage.jsx:
+Center content, max-w-xl, pt-24
+
+Hero text:
+"Good morning." — text-4xl font-bold text-white (or time-based greeting)
+"What happened in your business?" — text-lg text-[#4B5563] mt-2
+
+Card:
+background: rgba(255,255,255,0.02)
+border: 1px solid rgba(255,255,255,0.08)
+border-radius: 24px
+padding: 40px
+box-shadow: 0 32px 64px rgba(0,0,0,0.4)
+
+Inputs: 
+background: rgba(255,255,255,0.03)
+border: 1px solid rgba(255,255,255,0.08)
+border-radius: 10px, p-3, text-sm
+focus: border rgba(232,23,61,0.5), box-shadow 0 0 0 3px rgba(232,23,61,0.1)
+
+Toggle pills:
+background: rgba(255,255,255,0.03)
+border: 1px solid rgba(255,255,255,0.08)
+border-radius: 8px, p-1 (wrapper)
+Active pill: background rgba(232,23,61,0.15), border rgba(232,23,61,0.3), text #E8173D
+
+Drag zone:
+border: 2px dashed rgba(255,255,255,0.08)
+border-radius: 16px, p-12, text-center
+hover: border rgba(232,23,61,0.3), background rgba(232,23,61,0.03)
+
+Submit button:
+width: 100%
+background: linear-gradient(135deg, #E8173D 0%, #FF3355 100%)
+border-radius: 12px, py-3.5
+font-weight: 600, text-sm
+box-shadow: 0 8px 32px rgba(232,23,61,0.3)
+hover: box-shadow 0 12px 40px rgba(232,23,61,0.4), translateY(-2px)
+active: translateY(0), scale(0.99)
+
+3D TILT EFFECT — Add this hook: src/hooks/use3DTilt.js:
+import { useRef, useCallback } from 'react';
+
+export function use3DTilt(intensity = 8) {
+  const ref = useRef(null);
+  
+  const handleMouseMove = useCallback((e) => {
+    const card = ref.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -intensity;
+    const rotateY = ((x - centerX) / centerX) * intensity;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(4px)`;
+    card.style.transition = 'transform 100ms ease';
+  }, [intensity]);
+  
+  const handleMouseLeave = useCallback(() => {
+    if (ref.current) {
+      ref.current.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+      ref.current.style.transition = 'transform 400ms cubic-bezier(0.4,0,0.2,1)';
+    }
+  }, []);
+  
+  return { ref, handleMouseMove, handleMouseLeave };
+}
+
+Apply use3DTilt to: stat cards, brief cards, agent cards, upload card.
+
+RESPONSIVE:
+- Mobile (<768px): single column everything, smaller text, reduced padding
+- Tablet (768-1024px): 2 column stats, 2 column agents
+- Desktop: 4 column stats, 2 column agents, max-w-6xl centered
+
+Make sure every component imports and uses the 3D tilt hook on hover.
+Remove ALL monospace fonts from UI text.
+Remove ALL harsh full-opacity borders.
+Every shadow should feel like depth, not decoration.

@@ -1,31 +1,56 @@
 import { useState } from "react";
-import {
-  ClipboardIcon,
-  CheckIcon,
-  ClockIcon,
-  CircleStackIcon,
-  CalendarIcon,
-} from "@heroicons/react/24/outline";
-import { healthMeta, formatTimestamp } from "../status.js";
+import { healthMeta, formatTimestamp } from "../lib.js";
 
-// Renders the brief text: lines that look like "HEADER:" become bold headings,
-// "- " / "* " lines become bullets, everything else is a paragraph.
+function LightningIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CopyIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Render brief text: markdown-bold or ALL-CAPS section headers become brand-red
+// headings, bullet lines become red-dot lists, everything else is body text.
 function renderBrief(text) {
   if (!text) return null;
   const lines = text.split("\n");
+
   return lines.map((raw, i) => {
     const line = raw.trim();
-    if (!line) return <div key={i} className="h-2" />;
+    if (!line) return <div key={i} className="h-3" />;
 
-    const headerMatch = line.match(/^([A-Z][A-Z \/&]{2,}):\s*(.*)$/);
-    if (headerMatch) {
+    const boldHeader = line.match(/^\*\*(.+?)\*\*:?\s*(.*)$/);
+    if (boldHeader) {
       return (
-        <p key={i} className="mt-4 first:mt-0">
-          <span className="text-brand font-bold tracking-wide">
-            {headerMatch[1]}
+        <p key={i} className="mt-5 first:mt-0">
+          <span className="text-brand-red font-bold tracking-wide uppercase text-sm">
+            {boldHeader[1]}
           </span>
-          {headerMatch[2] ? (
-            <span className="text-gray-200">: {headerMatch[2]}</span>
+          {boldHeader[2] ? (
+            <span className="text-text-primary">: {boldHeader[2]}</span>
+          ) : null}
+        </p>
+      );
+    }
+
+    const capsHeader = line.match(/^([A-Z][A-Z \/&]{2,}):\s*(.*)$/);
+    if (capsHeader) {
+      return (
+        <p key={i} className="mt-5 first:mt-0">
+          <span className="text-brand-red font-bold tracking-wide text-sm">
+            {capsHeader[1]}
+          </span>
+          {capsHeader[2] ? (
+            <span className="text-text-primary">: {capsHeader[2]}</span>
           ) : null}
         </p>
       );
@@ -33,28 +58,21 @@ function renderBrief(text) {
 
     if (/^[-*•]\s+/.test(line)) {
       return (
-        <div key={i} className="flex gap-2 pl-1 mt-1">
-          <span className="text-brand mt-1">•</span>
-          <span className="text-gray-300">{line.replace(/^[-*•]\s+/, "")}</span>
+        <div key={i} className="flex gap-3 pl-1 mt-1.5">
+          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-brand-red shrink-0" />
+          <span className="text-text-primary/90">
+            {line.replace(/^[-*•]\s+/, "")}
+          </span>
         </div>
       );
     }
 
     return (
-      <p key={i} className="text-gray-300 mt-1">
+      <p key={i} className="text-text-primary/90 mt-1.5 leading-relaxed">
         {line}
       </p>
     );
   });
-}
-
-function MetaItem({ icon: Icon, children }) {
-  return (
-    <div className="flex items-center gap-1.5 text-xs text-gray-400">
-      <Icon className="h-4 w-4" />
-      <span>{children}</span>
-    </div>
-  );
 }
 
 export default function BriefCard({ brief }) {
@@ -69,53 +87,42 @@ export default function BriefCard({ brief }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard may be unavailable; silently ignore.
+      // Clipboard unavailable — ignore.
     }
   };
 
   return (
-    <div className="rounded-2xl border border-card-border bg-card-bg overflow-hidden">
-      <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-card-border">
-        <div className="flex items-center gap-3">
-          <span
-            className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${meta.badge}`}
-          >
-            {meta.label}
-          </span>
-          <h2 className="text-lg font-semibold text-white truncate">
-            {brief.data_source_name}
-          </h2>
-        </div>
-        <button
-          onClick={copy}
-          className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border border-card-border text-gray-300 hover:text-white hover:border-brand transition-colors"
+    <div className="rounded-2xl border border-bg-border bg-bg-secondary p-8 animate-fade_in">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <span
+          className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border ${meta.badge}`}
         >
-          {copied ? (
-            <>
-              <CheckIcon className="h-4 w-4 text-green-400" /> Copied
-            </>
-          ) : (
-            <>
-              <ClipboardIcon className="h-4 w-4" /> Copy Brief
-            </>
-          )}
-        </button>
+          {meta.label}
+        </span>
+        <div className="text-right text-xs text-text-muted">
+          <div>{formatTimestamp(brief.created_at)}</div>
+          <div className="text-text-subtle">{brief.data_source_name}</div>
+        </div>
       </div>
 
-      <div className="px-6 py-5 leading-relaxed text-sm">
+      <div className="mt-6 max-w-2xl text-base">
         {renderBrief(brief.final_brief)}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-6 py-4 border-t border-card-border bg-black/20">
-        {brief.processing_time_seconds != null && (
-          <MetaItem icon={ClockIcon}>
-            {brief.processing_time_seconds}s processing
-          </MetaItem>
-        )}
-        <MetaItem icon={CircleStackIcon}>{brief.data_source_name}</MetaItem>
-        <MetaItem icon={CalendarIcon}>
-          {formatTimestamp(brief.created_at)}
-        </MetaItem>
+      <div className="mt-8 pt-5 border-t border-bg-border flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-1.5 text-xs text-text-muted">
+          <LightningIcon className="h-4 w-4 text-brand-red" />
+          {brief.processing_time_seconds != null
+            ? `Generated in ${brief.processing_time_seconds}s`
+            : "Generated"}
+        </div>
+        <button
+          onClick={copy}
+          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-bg-border text-text-primary hover:border-brand-red transition-all duration-200"
+        >
+          <CopyIcon className="h-3.5 w-3.5" />
+          {copied ? "Copied!" : "Copy Brief"}
+        </button>
       </div>
     </div>
   );
