@@ -19,48 +19,37 @@ function CopyIcon(props) {
 }
 
 // Render brief text: markdown-bold or ALL-CAPS section headers become brand-red
-// headings, bullet lines become red-dot lists, everything else is body text.
+// section labels, bullet lines become red-dot lists, everything else is body.
 function renderBrief(text) {
   if (!text) return null;
   const lines = text.split("\n");
 
   return lines.map((raw, i) => {
     const line = raw.trim();
-    if (!line) return <div key={i} className="h-3" />;
+    if (!line) return <div key={i} className="h-2" />;
 
     const boldHeader = line.match(/^\*\*(.+?)\*\*:?\s*(.*)$/);
-    if (boldHeader) {
-      return (
-        <p key={i} className="mt-5 first:mt-0">
-          <span className="text-brand-red font-bold tracking-wide uppercase text-sm">
-            {boldHeader[1]}
-          </span>
-          {boldHeader[2] ? (
-            <span className="text-text-primary">: {boldHeader[2]}</span>
-          ) : null}
-        </p>
-      );
-    }
-
     const capsHeader = line.match(/^([A-Z][A-Z \/&]{2,}):\s*(.*)$/);
-    if (capsHeader) {
+    const header = boldHeader || capsHeader;
+
+    if (header) {
       return (
-        <p key={i} className="mt-5 first:mt-0">
-          <span className="text-brand-red font-bold tracking-wide text-sm">
-            {capsHeader[1]}
-          </span>
-          {capsHeader[2] ? (
-            <span className="text-text-primary">: {capsHeader[2]}</span>
+        <div key={i} className="mt-6 first:mt-0">
+          <div className="text-[10px] font-bold tracking-[0.2em] text-[#E8173D] uppercase mb-2">
+            {header[1]}
+          </div>
+          {header[2] ? (
+            <p className="text-sm text-[#9CA3AF] leading-[1.8]">{header[2]}</p>
           ) : null}
-        </p>
+        </div>
       );
     }
 
     if (/^[-*•]\s+/.test(line)) {
       return (
-        <div key={i} className="flex gap-3 pl-1 mt-1.5">
-          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-brand-red shrink-0" />
-          <span className="text-text-primary/90">
+        <div key={i} className="flex gap-3 mt-2">
+          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#E8173D] shrink-0" />
+          <span className="text-sm text-[#D1D5DB] leading-[1.7]">
             {line.replace(/^[-*•]\s+/, "")}
           </span>
         </div>
@@ -68,7 +57,7 @@ function renderBrief(text) {
     }
 
     return (
-      <p key={i} className="text-text-primary/90 mt-1.5 leading-relaxed">
+      <p key={i} className="text-sm text-[#9CA3AF] leading-[1.8] mt-2">
         {line}
       </p>
     );
@@ -92,37 +81,70 @@ export default function BriefCard({ brief }) {
   };
 
   return (
-    <div className="rounded-2xl border border-bg-border bg-bg-secondary p-8 animate-fade_in">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div
+      className="overflow-hidden animate-fade-in"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 20,
+        boxShadow: "0 24px 48px rgba(0,0,0,0.4)",
+      }}
+    >
+      {/* Top status banner */}
+      <div
+        className="flex items-center justify-center gap-2.5 p-3"
+        style={{
+          background: meta.tint,
+          borderBottom: `1px solid ${meta.border}`,
+        }}
+      >
         <span
-          className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border ${meta.badge}`}
+          className="h-2 w-2 rounded-full"
+          style={{ background: meta.color, boxShadow: `0 0 10px ${meta.color}` }}
+        />
+        <span
+          className="text-xs font-bold tracking-[0.15em] uppercase"
+          style={{ color: meta.color }}
         >
           {meta.label}
         </span>
-        <div className="text-right text-xs text-text-muted">
-          <div>{formatTimestamp(brief.created_at)}</div>
-          <div className="text-text-subtle">{brief.data_source_name}</div>
-        </div>
+        <span className="text-xs text-[#6B7280]">· {meta.phrase}</span>
       </div>
 
-      <div className="mt-6 max-w-2xl text-base">
-        {renderBrief(brief.final_brief)}
-      </div>
-
-      <div className="mt-8 pt-5 border-t border-bg-border flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-1.5 text-xs text-text-muted">
-          <LightningIcon className="h-4 w-4 text-brand-red" />
-          {brief.processing_time_seconds != null
-            ? `Generated in ${brief.processing_time_seconds}s`
-            : "Generated"}
+      <div className="p-8">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <span className="text-sm font-semibold text-white">
+            {brief.data_source_name}
+          </span>
+          <span className="text-xs text-[#374151]">
+            {formatTimestamp(brief.created_at)}
+          </span>
         </div>
-        <button
-          onClick={copy}
-          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-bg-border text-text-primary hover:border-brand-red transition-all duration-200"
+
+        <div className="mt-4 max-w-2xl">{renderBrief(brief.final_brief)}</div>
+
+        <div
+          className="flex items-center justify-between flex-wrap gap-3 pt-4 mt-6"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
         >
-          <CopyIcon className="h-3.5 w-3.5" />
-          {copied ? "Copied!" : "Copy Brief"}
-        </button>
+          <div className="flex items-center gap-1.5 text-xs text-[#374151]">
+            <LightningIcon className="h-3.5 w-3.5 text-[#E8173D]" />
+            {brief.processing_time_seconds != null
+              ? `Generated in ${brief.processing_time_seconds}s`
+              : "Generated"}
+          </div>
+          <button
+            onClick={copy}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg text-[#9CA3AF] transition-all duration-200 hover:text-white"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <CopyIcon className="h-3.5 w-3.5" />
+            {copied ? "Copied!" : "Copy Brief"}
+          </button>
+        </div>
       </div>
     </div>
   );

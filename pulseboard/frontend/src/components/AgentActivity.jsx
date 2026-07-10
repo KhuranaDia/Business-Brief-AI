@@ -58,10 +58,10 @@ function CheckIcon(props) {
 }
 
 const AGENTS = [
-  { key: "revenue", name: "Revenue Agent", Icon: RevenueIcon },
-  { key: "behavior", name: "Behavior Agent", Icon: UsersIcon },
-  { key: "error", name: "Error Agent", Icon: WarningIcon },
-  { key: "sentiment", name: "Sentiment Agent", Icon: ChatIcon },
+  { key: "revenue", name: "Revenue Agent", color: "#10B981", Icon: RevenueIcon },
+  { key: "behavior", name: "Behavior Agent", color: "#6366F1", Icon: UsersIcon },
+  { key: "error", name: "Error Agent", color: "#F59E0B", Icon: WarningIcon },
+  { key: "sentiment", name: "Sentiment Agent", color: "#8B5CF6", Icon: ChatIcon },
 ];
 
 /**
@@ -100,7 +100,7 @@ export default function AgentActivity({ active, result }) {
   const allComplete = Boolean(result) && completed >= AGENTS.length;
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {AGENTS.map((agent, i) => {
           const isComplete = Boolean(result) && i < completed;
@@ -108,51 +108,62 @@ export default function AgentActivity({ active, result }) {
           const status = isComplete
             ? "COMPLETE"
             : isAnalyzing
-              ? "ANALYZING…"
-              : "IDLE";
+              ? "ANALYZING"
+              : "QUEUED";
 
           const insight = agentResults[agent.key]?.insight;
           const severity = severities[agent.key];
           const sevMeta = severity ? severityMeta(severity) : null;
 
-          const border = isComplete
-            ? "border-status-stable"
-            : isAnalyzing
-              ? "border-brand-red shadow-[0_0_24px_rgba(232,23,61,0.22)] animate-pulse_slow"
-              : "border-bg-border";
-
-          const iconColor = isComplete
-            ? "text-status-stable"
-            : isAnalyzing
-              ? "text-brand-red"
-              : "text-text-subtle";
+          const cardStyle = {
+            background: "rgba(255,255,255,0.02)",
+            borderRadius: 16,
+            padding: 20,
+            border: "1px solid rgba(255,255,255,0.06)",
+          };
+          if (isComplete) {
+            cardStyle.border = "1px solid rgba(16,185,129,0.2)";
+            cardStyle.boxShadow = "0 0 24px rgba(16,185,129,0.08)";
+          }
 
           return (
             <div
               key={agent.key}
-              className={`rounded-xl border bg-bg-secondary p-6 transition-all duration-300 ${border}`}
+              style={cardStyle}
+              className={`transition-all duration-300 ${
+                isAnalyzing ? "animate-border-pulse" : ""
+              }`}
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className={`transition-colors duration-300 ${iconColor}`}>
+                  <span
+                    className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
+                    style={{
+                      background: isComplete
+                        ? "rgba(16,185,129,0.1)"
+                        : `${agent.color}1A`,
+                      color: isComplete ? "#10B981" : agent.color,
+                    }}
+                  >
                     {isComplete ? (
-                      <CheckIcon className="h-8 w-8" />
+                      <CheckIcon className="h-5 w-5" />
                     ) : (
-                      <agent.Icon className="h-8 w-8" />
+                      <agent.Icon className="h-5 w-5" />
                     )}
                   </span>
                   <div>
-                    <div className="text-sm font-bold text-text-primary">
+                    <div className="text-sm font-semibold text-[#F0F0FA]">
                       {agent.name}
                     </div>
                     <div
-                      className={`text-xs font-medium tracking-wide ${
-                        isComplete
-                          ? "text-status-stable"
+                      className="text-[10px] font-semibold tracking-[0.15em] uppercase mt-0.5"
+                      style={{
+                        color: isComplete
+                          ? "#10B981"
                           : isAnalyzing
-                            ? "text-brand-red"
-                            : "text-text-muted"
-                      }`}
+                            ? "#E8173D"
+                            : "#374151",
+                      }}
                     >
                       {status}
                     </div>
@@ -161,7 +172,12 @@ export default function AgentActivity({ active, result }) {
 
                 {isComplete && sevMeta && (
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border ${sevMeta.badge}`}
+                    className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shrink-0"
+                    style={{
+                      background: sevMeta.tint,
+                      color: sevMeta.color,
+                      border: `1px solid ${sevMeta.border}`,
+                    }}
                   >
                     {sevMeta.label}
                   </span>
@@ -169,7 +185,7 @@ export default function AgentActivity({ active, result }) {
               </div>
 
               {isComplete && insight && (
-                <p className="mt-4 text-xs text-text-muted leading-relaxed line-clamp-2 animate-fade_in">
+                <p className="mt-4 text-xs text-[#6B7280] leading-relaxed line-clamp-2 animate-fade-in">
                   {insight}
                 </p>
               )}
@@ -178,18 +194,35 @@ export default function AgentActivity({ active, result }) {
         })}
       </div>
 
-      <div className="mt-6 text-center h-6">
-        {allComplete ? (
-          <p className="text-sm text-brand-red font-medium animate-fade_in">
-            Synthesis agent activating — writing your brief…
-          </p>
-        ) : result ? (
-          <p className="text-sm text-text-muted">Agents reporting in…</p>
-        ) : (
-          <p className="text-sm text-text-muted">
-            Four specialists analyzing in parallel…
-          </p>
-        )}
+      <div
+        className="rounded-xl p-4 mt-4 flex items-center gap-3"
+        style={{
+          background: "rgba(232,23,61,0.05)",
+          border: "1px solid rgba(232,23,61,0.15)",
+        }}
+      >
+        <span
+          className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0"
+          style={{ background: "rgba(232,23,61,0.12)", color: "#E8173D" }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <div>
+          <div className="text-sm font-semibold">
+            {allComplete ? (
+              <span className="gradient-text">Synthesizing insights…</span>
+            ) : (
+              <span className="text-[#F0F0FA]">Synthesis Agent</span>
+            )}
+          </div>
+          <div className="text-xs text-[#374151]">
+            {allComplete
+              ? "Connecting the dots across all four agents"
+              : "Waiting for specialists to report in"}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGenerateBrief, useUploadCSV } from "../hooks/useApi.js";
 import AgentActivity from "../components/AgentActivity.jsx";
+import TiltCard from "../components/TiltCard.jsx";
 
 const SAMPLE_DATA = {
   revenue: {
@@ -32,6 +33,13 @@ const SAMPLE_DATA = {
   },
 };
 
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning.";
+  if (h < 18) return "Good afternoon.";
+  return "Good evening.";
+}
+
 function UploadArrowIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" {...props}>
@@ -40,20 +48,10 @@ function UploadArrowIcon(props) {
     </svg>
   );
 }
-
 function CheckIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}>
       <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function Spinner(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="animate-spin" {...props}>
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
-      <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }
@@ -92,7 +90,6 @@ export default function UploadPage() {
   const finishThenNavigate = (res) => {
     setAnalysis(res);
     setPhase("done");
-    // Let the agent-complete animation play out before showing the dashboard.
     setTimeout(() => navigate("/"), 2600);
   };
 
@@ -139,149 +136,182 @@ export default function UploadPage() {
 
   if (phase !== "form") {
     return (
-      <div className="mx-auto max-w-3xl px-6 pt-[10vh] pb-16">
+      <div className="mx-auto max-w-3xl px-6 pt-24 pb-16">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-text-primary">
+          <h1 className="text-2xl font-bold text-white">
             Analyzing {businessName.trim() || "your data"}
           </h1>
-          <p className="mt-2 text-text-muted">
-            PulseBoard's agents are on it. This takes a few seconds.
+          <p className="mt-2 text-[#4B5563]">
+            Four specialists are on it — this takes a few seconds.
           </p>
         </div>
-        <AgentActivity active={phase === "analyzing" || phase === "done"} result={analysis} />
+        <AgentActivity
+          active={phase === "analyzing" || phase === "done"}
+          result={analysis}
+        />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 pt-[10vh] pb-16">
-      <p className="text-xs uppercase tracking-widest text-text-muted">
-        Step 1 of 1
-      </p>
-      <h1 className="mt-2 text-4xl font-bold text-text-primary">
-        Connect your data.
-      </h1>
-      <p className="mt-3 text-text-muted">
-        Drop in your business metrics. PulseBoard handles the rest.
-      </p>
+    <div className="mx-auto max-w-xl px-6 pt-24 pb-16">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-white">{greeting()}</h1>
+        <p className="text-lg text-[#4B5563] mt-2">
+          What happened in your business?
+        </p>
+      </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-8 rounded-xl border border-bg-border bg-bg-secondary p-8 space-y-6"
+      <TiltCard
+        intensity={3}
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 24,
+          padding: 40,
+          boxShadow: "0 32px 64px rgba(0,0,0,0.4)",
+        }}
       >
-        <div>
-          <label className="block text-sm text-text-muted mb-1.5">
-            Business Name
-          </label>
-          <input
-            type="text"
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-            placeholder="e.g. Acme SaaS"
-            className="w-full rounded-lg bg-bg-primary border border-bg-border text-text-primary placeholder-text-subtle p-3 focus:outline-none focus:border-brand-red transition-colors duration-200"
-          />
-        </div>
-
-        <div className="inline-flex gap-2 p-1 rounded-lg bg-bg-primary border border-bg-border">
-          {[
-            { id: "csv", label: "Upload CSV" },
-            { id: "json", label: "Paste JSON" },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => setMode(opt.id)}
-              className={`text-sm px-4 py-1.5 rounded-md transition-all duration-200 ${
-                mode === opt.id
-                  ? "bg-brand-red text-white"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {mode === "csv" ? (
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
+            <label className="block text-[10px] font-semibold tracking-[0.15em] text-[#4B5563] uppercase mb-2">
+              Business Name
+            </label>
             <input
-              ref={fileInput}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              type="text"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="e.g. Acme SaaS"
+              className="glass-input w-full rounded-[10px] p-3 text-sm"
             />
+          </div>
+
+          <div>
             <div
-              onClick={() => fileInput.current?.click()}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
+              className="inline-flex gap-1 p-1 rounded-lg"
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
               }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={onDrop}
-              className={`cursor-pointer rounded-xl border border-dashed p-12 text-center transition-all duration-200 ${
-                dragging
-                  ? "border-brand-red bg-brand-red/5"
-                  : "border-bg-border hover:border-brand-red hover:bg-brand-red/5"
-              }`}
             >
-              {file ? (
-                <div className="flex flex-col items-center gap-2">
-                  <span className="flex items-center gap-2 text-status-stable">
-                    <CheckIcon className="h-6 w-6" />
-                    <span className="font-medium">{file.name}</span>
-                  </span>
-                  <span className="text-xs text-text-muted">
-                    Click to choose a different file
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <UploadArrowIcon className="h-10 w-10 text-text-muted" />
-                  <span className="font-bold text-text-primary">
-                    Drop your CSV here
-                  </span>
-                  <span className="text-sm text-text-muted">
-                    or click to browse
-                  </span>
-                </div>
-              )}
+              {[
+                { id: "csv", label: "Upload CSV" },
+                { id: "json", label: "Paste JSON" },
+              ].map((opt) => {
+                const activeMode = mode === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setMode(opt.id)}
+                    className="text-xs font-medium px-4 py-1.5 rounded-md transition-all duration-200"
+                    style={
+                      activeMode
+                        ? {
+                            background: "rgba(232,23,61,0.15)",
+                            border: "1px solid rgba(232,23,61,0.3)",
+                            color: "#E8173D",
+                          }
+                        : { border: "1px solid transparent", color: "#6B7280" }
+                    }
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        ) : (
-          <div>
+
+          {mode === "csv" ? (
+            <div>
+              <input
+                ref={fileInput}
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+              <div
+                onClick={() => fileInput.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+                className="cursor-pointer rounded-2xl p-12 text-center transition-all duration-200"
+                style={{
+                  border: dragging
+                    ? "2px dashed rgba(232,23,61,0.5)"
+                    : "2px dashed rgba(255,255,255,0.08)",
+                  background: dragging
+                    ? "rgba(232,23,61,0.03)"
+                    : "transparent",
+                }}
+              >
+                {file ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="flex items-center gap-2 text-[#10B981]">
+                      <CheckIcon className="h-6 w-6" />
+                      <span className="font-medium text-white">{file.name}</span>
+                    </span>
+                    <span className="text-xs text-[#374151]">
+                      Click to choose a different file
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <UploadArrowIcon className="h-9 w-9 text-[#4B5563]" />
+                    <span className="font-semibold text-white">
+                      Drop your CSV here
+                    </span>
+                    <span className="text-sm text-[#4B5563]">
+                      or click to browse
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
             <textarea
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
-              rows={10}
+              rows={9}
               spellCheck={false}
               placeholder={'{\n  "revenue": { "mrr": 120000 },\n  "behavior": { "dau": 5000 }\n}'}
-              className="w-full font-mono text-sm rounded-lg bg-bg-primary border border-bg-border text-text-primary placeholder-text-subtle p-4 focus:outline-none focus:border-brand-red transition-colors duration-200 resize-y"
+              className="glass-input w-full rounded-[10px] p-4 text-sm resize-y leading-relaxed"
             />
-          </div>
-        )}
+          )}
 
-        <button
-          type="button"
-          onClick={fillSample}
-          className="text-sm text-brand-red hover:underline"
-        >
-          Try with sample data →
-        </button>
+          <button
+            type="button"
+            onClick={fillSample}
+            className="text-xs text-[#E8173D] hover:opacity-80 transition-opacity"
+          >
+            Try with sample data →
+          </button>
 
-        {error && (
-          <div className="rounded-lg border border-status-critical/40 bg-status-critical/10 text-status-critical px-4 py-3 text-sm">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div
+              className="rounded-lg px-4 py-3 text-sm"
+              style={{
+                background: "rgba(239,68,68,0.08)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "#EF4444",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-redHover text-white font-bold text-lg rounded-lg p-4 transition-all duration-200 hover:scale-[1.01]"
-        >
-          Generate Morning Brief
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="btn-submit w-full rounded-xl py-3.5 text-sm font-semibold"
+          >
+            Generate Morning Brief
+          </button>
+        </form>
+      </TiltCard>
     </div>
   );
 }

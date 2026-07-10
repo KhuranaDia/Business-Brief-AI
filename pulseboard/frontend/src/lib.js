@@ -1,46 +1,61 @@
-// Shared display helpers: map backend health/severity values to labels and
-// static Tailwind class strings.
-//
-// NOTE: Tailwind only detects complete class strings at build time, so every
-// class combination below is written out in full (no string interpolation).
+// Shared display helpers: map backend health/severity values to labels and the
+// colors / gradients the premium UI uses via inline styles.
 
-const HEALTH_TONE = {
-  critical:
-    "bg-status-critical/10 text-status-critical border-status-critical/40",
-  warning: "bg-status-warning/10 text-status-warning border-status-warning/40",
-  stable: "bg-status-stable/10 text-status-stable border-status-stable/40",
-  good: "bg-status-good/10 text-status-good border-status-good/40",
-};
-
-const HEALTH_DOT = {
-  critical: "bg-status-critical",
-  warning: "bg-status-warning",
-  stable: "bg-status-stable",
-  good: "bg-status-good",
-};
+export function hexA(hex, alpha) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 const HEALTH = {
-  critical: { label: "CRITICAL", tone: "critical" },
-  at_risk: { label: "WARNING", tone: "warning" },
-  healthy: { label: "STABLE", tone: "stable" },
-  good: { label: "GOOD", tone: "good" },
-  unknown: { label: "UNKNOWN", tone: "good" },
+  critical: {
+    label: "CRITICAL",
+    color: "#EF4444",
+    phrase: "Business is under stress",
+  },
+  at_risk: {
+    label: "WARNING",
+    color: "#F59E0B",
+    phrase: "Some areas need attention",
+  },
+  healthy: {
+    label: "HEALTHY",
+    color: "#10B981",
+    phrase: "Everything looks healthy",
+  },
+  unknown: { label: "UNKNOWN", color: "#6366F1", phrase: "Status unclear" },
 };
 
 const SEVERITY = {
-  critical: { label: "CRITICAL", tone: "critical" },
-  warning: { label: "WARNING", tone: "warning" },
-  normal: { label: "NORMAL", tone: "stable" },
+  critical: { label: "CRITICAL", color: "#EF4444" },
+  warning: { label: "WARNING", color: "#F59E0B" },
+  normal: { label: "NORMAL", color: "#10B981" },
 };
 
 export function healthMeta(health) {
-  const meta = HEALTH[health] || HEALTH.unknown;
-  return { label: meta.label, badge: HEALTH_TONE[meta.tone], dot: HEALTH_DOT[meta.tone] };
+  const m = HEALTH[health] || HEALTH.unknown;
+  return {
+    label: m.label,
+    color: m.color,
+    phrase: m.phrase,
+    accent: `linear-gradient(to bottom, ${m.color}, ${hexA(m.color, 0)})`,
+    glow: `0 0 40px ${hexA(m.color, 0.08)}`,
+    tint: hexA(m.color, 0.08),
+    softTint: hexA(m.color, 0.05),
+    border: hexA(m.color, 0.15),
+  };
 }
 
 export function severityMeta(severity) {
-  const meta = SEVERITY[severity] || SEVERITY.normal;
-  return { label: meta.label, badge: HEALTH_TONE[meta.tone], dot: HEALTH_DOT[meta.tone] };
+  const m = SEVERITY[severity] || SEVERITY.normal;
+  return {
+    label: m.label,
+    color: m.color,
+    tint: hexA(m.color, 0.1),
+    border: hexA(m.color, 0.25),
+  };
 }
 
 export function formatTimestamp(iso) {
@@ -69,7 +84,5 @@ export function primaryStory(text) {
     if (inline) return inline;
     return lines.slice(idx + 1).find((l) => l) || "";
   }
-  return (
-    lines.find((l) => l && !/^\**[A-Z][A-Z \/&]{2,}\**:?$/.test(l)) || ""
-  );
+  return lines.find((l) => l && !/^\**[A-Z][A-Z \/&]{2,}\**:?$/.test(l)) || "";
 }

@@ -1,0 +1,1 @@
+- [PulseBoard environment & validation](pulseboard-env.md) — standalone app (not an artifact); no Python/Docker here, validate frontend via esbuild, runs only via docker-compose.
