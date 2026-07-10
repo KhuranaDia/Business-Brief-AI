@@ -20,6 +20,8 @@ PulseBoard lives at `pulseboard/` (workspace root) and is a self-contained Docke
 
 `DATABASE_URL` from Replit includes libpq-only params (`sslmode`, `channel_binding`, `sslrootcert`) that asyncpg rejects (`connect() got an unexpected keyword argument 'sslmode'`). `pulseboard/backend/core/database.py` has `_normalize_url()` that strips them and sets `connect_args={"ssl": True}` when sslmode requires SSL.
 
-## Secrets
+## Secrets & Fireworks model
 
 `FIREWORKS_API_KEY` is required only for brief generation (`/api/analyze`, `/api/upload-csv`). The app boots and lists past briefs without it; backend logs a clear warning at startup.
+
+The originally hardcoded model (`llama-v3p1-70b-instruct`) was deprecated/undeployed on the account and returned `404 Model not found`. Fireworks rotates which models are deployed — do NOT trust a hardcoded name. Query available models with `GET https://api.fireworks.ai/inference/v1/models` (Bearer key) and pick one. Model is now env-overridable via `FIREWORKS_MODEL` (default `gpt-oss-120b`) in `core/fireworks_client.py`.

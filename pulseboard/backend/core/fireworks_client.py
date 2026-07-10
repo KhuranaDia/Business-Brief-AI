@@ -1,7 +1,8 @@
 """Fireworks AI client wrapper for PulseBoard.
 
-Provides thin async helpers around the Fireworks chat completions API using the
-llama-v3p1-70b-instruct model. Two entry points are exposed:
+Provides thin async helpers around the Fireworks chat completions API using a
+currently-deployed instruction model (see ``MODEL``). Two entry points are
+exposed:
 
 - ``call_llm``      -> returns free-form text
 - ``call_llm_json`` -> returns a parsed JSON object (dict/list)
@@ -17,7 +18,10 @@ from typing import Any, Optional
 import httpx
 
 FIREWORKS_API_URL = "https://api.fireworks.ai/inference/v1/chat/completions"
-MODEL = "accounts/fireworks/models/llama-v3p1-70b-instruct"
+# Override with FIREWORKS_MODEL if a different deployed model is preferred.
+MODEL = os.environ.get(
+    "FIREWORKS_MODEL", "accounts/fireworks/models/gpt-oss-120b"
+)
 
 DEFAULT_SYSTEM_PROMPT = (
     "You are a precise business data analyst. Be specific, quantitative, and "
