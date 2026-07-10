@@ -26,12 +26,25 @@ export function useBriefs(intervalMs = 30000) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const timer = useRef(null);
+  const seeded = useRef(false);
 
   const refresh = useCallback(async (background = false) => {
     if (!background) setLoading(true);
     try {
       const { data } = await client.get("/api/briefs");
-      setBriefs(Array.isArray(data) ? data : []);
+      let list = Array.isArray(data) ? data : [];
+      // First-run seeding: if the database is empty, populate it with sample
+      // briefs once so new visitors see a full dashboard instead of an empty one.
+      if (list.length === 0 && !seeded.current) {
+        seeded.current = true;
+        try {
+          const { data: seededData } = await client.post("/api/seed");
+          if (Array.isArray(seededData)) list = seededData;
+        } catch {
+          // Seeding is best-effort; fall back to the empty state on failure.
+        }
+      }
+      setBriefs(list);
       setError("");
     } catch (err) {
       setError(friendly(err));

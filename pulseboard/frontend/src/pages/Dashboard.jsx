@@ -3,14 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useBriefs, useGenerateBrief } from "../hooks/useApi.js";
 import { healthMeta, formatTimestamp, primaryStory } from "../lib.js";
 import TiltCard from "../components/TiltCard.jsx";
+import AgentActivity from "../components/AgentActivity.jsx";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { motion } from "framer-motion";
 
-const DEMO_DATA = {
-  revenue: { mrr: 245000, mrr_last_month: 268000, new_bookings: 18400, refunds: 42600, arpu: 48 },
-  behavior: { dau: 12900, dau_last_week: 14200, mau: 41000, churn_rate: 0.082, checkout_funnel_dropoff: 0.58 },
-  errors: { error_rate: 0.045, p95_latency_ms: 1240, uptime: 0.991, checkout_api_failures: 842 },
-  sentiment: { nps: 12, support_tickets: 890, top_complaint: "checkout keeps crashing on mobile", avg_rating: 3.2 }
+const CRISIS_DATA = {
+  revenue: { yesterday: 8450, day_before: 9800, weekly_avg: 9200, currency: "USD", refunds_today: 1240, failed_payments: 89 },
+  users: { active_today: 1243, active_yesterday: 1891, churned_this_week: 47, new_signups_today: 12 },
+  errors: { error_rate_percent: 8.3, normal_error_rate: 0.8, checkout_failures: 143, api_timeouts: 67, peak_error_time: "11:30 PM" },
+  sentiment: { support_tickets_today: 28, normal_tickets_per_day: 6, nps_score: 31, nps_last_month: 58, top_complaint: "checkout not working on mobile" }
 };
 
 function StatCard({ label, value, sub, color, trend = 0 }) {
@@ -38,16 +39,26 @@ function StatCard({ label, value, sub, color, trend = 0 }) {
 }
 
 export default function Dashboard() {
-  const { briefs, loading, error } = useBriefs();
+  const { briefs, loading, error, refresh } = useBriefs();
   const navigate = useNavigate();
   const { generate, loading: demoLoading } = useGenerateBrief();
+  const [demoPhase, setDemoPhase] = useState("idle");
+  const [demoResult, setDemoResult] = useState(null);
 
   const handleDemo = async () => {
+    setDemoResult(null);
+    setDemoPhase("analyzing");
     try {
-      const res = await generate(DEMO_DATA, "Demo Enterprise Dataset");
-      navigate(`/brief/${res.id}`);
+      const res = await generate(CRISIS_DATA, "Acme SaaS — Crisis Scenario");
+      setDemoResult(res);
+      setDemoPhase("done");
+      setTimeout(async () => {
+        await refresh();
+        setDemoPhase("idle");
+      }, 2600);
     } catch (e) {
       console.error(e);
+      setDemoPhase("idle");
     }
   };
 
@@ -85,6 +96,18 @@ export default function Dashboard() {
 
   if (error) {
     return <div className="max-w-6xl mx-auto px-6 py-10 text-status-critical bg-status-critical/10 p-4 rounded-xl border border-status-critical/20">{error}</div>;
+  }
+
+  if (demoPhase !== "idle") {
+    return (
+      <div className="mx-auto max-w-4xl px-6 pt-16 pb-16">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-text-primary mb-3">Running Multi-Agent Analysis</h1>
+          <p className="text-text-muted text-lg">Five specialist AI agents are processing the crisis scenario dataset.</p>
+        </motion.div>
+        <AgentActivity active={demoPhase === "analyzing" || demoPhase === "done"} result={demoResult} />
+      </div>
+    );
   }
 
   if (!briefs?.length) {

@@ -17,13 +17,14 @@ from typing import Any
 import pandas as pd
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents import impact_agent
 from core.database import Brief, get_db
 from core.fireworks_client import call_llm
 from core.orchestrator import run_pipeline
+from core.seed_data import SAMPLE_BRIEFS
 
 router = APIRouter(prefix="/api")
 
@@ -80,6 +81,7 @@ async def analyze(
         raise HTTPException(status_code=502, detail=f"Analysis failed: {exc}") from exc
 
     brief = await _persist_brief(db, result)
+    result["id"] = brief.id
     result["brief_id"] = brief.id
     result["created_at"] = brief.created_at.isoformat() if brief.created_at else None
     return result
@@ -115,6 +117,7 @@ async def upload_csv(
         raise HTTPException(status_code=502, detail=f"Analysis failed: {exc}") from exc
 
     brief = await _persist_brief(db, result)
+    result["id"] = brief.id
     result["brief_id"] = brief.id
     result["created_at"] = brief.created_at.isoformat() if brief.created_at else None
     return result
@@ -125,6 +128,35 @@ async def list_briefs(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]
     """Return the 10 most recent briefs."""
     stmt = select(Brief).order_by(Brief.created_at.desc()).limit(10)
     rows = (await db.execute(stmt)).scalars().all()
+    return [row.to_dict() for row in rows]
+
+
+@router.post("/seed")
+async def seed(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
+    """Populate an empty database with pre-generated sample briefs.
+
+    Idempotent: if any briefs already exist, this is a no-op and simply returns
+    the 10 most recent briefs. Only seeds when the table is empty.
+
+    A transaction-level advisory lock serializes concurrent seed calls (e.g. the
+    frontend auto-seeds on first load) so two callers cannot both observe an
+    empty table and each insert the samples, which would create duplicates.
+    """
+    await db.execute(text("SELECT pg_advisory_xact_lock(4815162342)"))
+
+    existing = (
+        await db.execute(select(Brief).order_by(Brief.created_at.desc()).limit(10))
+    ).scalars().all()
+    if existing:
+        return [row.to_dict() for row in existing]
+
+    for sample in SAMPLE_BRIEFS:
+        db.add(Brief(**sample))
+    await db.commit()
+
+    rows = (
+        await db.execute(select(Brief).order_by(Brief.created_at.desc()).limit(10))
+    ).scalars().all()
     return [row.to_dict() for row in rows]
 
 

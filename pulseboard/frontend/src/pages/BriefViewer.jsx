@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { useBrief, useImpact, useChat } from "../hooks/useApi.js";
 import { healthMeta, severityMeta, formatTimestamp } from "../lib.js";
 import { motion } from "framer-motion";
@@ -139,12 +139,15 @@ function ChatInterface({ briefId }) {
 
 export default function BriefViewer() {
   const { id } = useParams();
-  const { brief, loading, error } = useBrief(id);
+  const isValidId = id && id !== "undefined" && id !== "null";
+  const { brief, loading, error } = useBrief(isValidId ? id : undefined);
   const { impact, loading: impactLoading, fetchImpact } = useImpact();
 
   useEffect(() => {
     if (brief?.id) fetchImpact(brief.id);
   }, [brief?.id, fetchImpact]);
+
+  if (!isValidId) return <Navigate to="/" replace />;
 
   if (loading) return <div className="max-w-5xl mx-auto p-10 animate-pulse text-text-muted">Loading brief...</div>;
   if (error || !brief) return <div className="max-w-5xl mx-auto p-10 text-status-critical">{error || "Not found"}</div>;
