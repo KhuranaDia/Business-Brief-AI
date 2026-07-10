@@ -1,0 +1,76 @@
+Now fill in the backend logic completely. Here's what each file should contain:
+
+1. backend/core/fireworks_client.py
+- Async function call_llm(prompt, system_prompt, max_tokens, temperature) 
+- Async function call_llm_json(prompt) for structured JSON output
+- Uses httpx to call https://api.fireworks.ai/inference/v1/chat/completions
+- Model: accounts/fireworks/models/llama-v3p1-70b-instruct
+- API key from environment variable FIREWORKS_API_KEY
+
+2. backend/core/orchestrator.py
+- Async function run_pipeline(data, data_source_name)
+- Runs revenue_agent, behavior_agent, error_agent, sentiment_agent ALL IN PARALLEL using asyncio.gather()
+- Then passes all 4 results to synthesis_agent
+- Returns complete result with final_brief, overall_health, anomalies, processing_time_seconds
+
+3. backend/agents/revenue_agent.py
+- Async function run(data) 
+- Phase 1: extract revenue signals from data using call_llm_json
+- Phase 2: analyze trends and anomalies using call_llm
+- Returns: insight, anomalies list, severity (critical/warning/normal)
+
+4. backend/agents/behavior_agent.py
+- Same pattern as revenue_agent but focused on user behavior metrics
+- DAU, MAU, retention, churn, funnel drop-offs, session data
+
+5. backend/agents/error_agent.py
+- Same pattern but focused on system health
+- Error rates, latency, uptime, crash rates, API failures
+
+6. backend/agents/sentiment_agent.py
+- Same pattern but focused on customer signals
+- Support tickets, NPS, reviews, social mentions
+
+7. backend/agents/synthesis_agent.py
+- Async function run(revenue_result, behavior_result, error_result, sentiment_result, data_source_name)
+- Step 1: detect cross-agent patterns using call_llm_json
+- Step 2: write final brief in plain English using call_llm
+- Brief format: STATUS header, executive summary, what changed bullets, root cause, recommended actions, watch list
+- Under 300 words, every sentence must be specific
+
+8. backend/core/database.py
+- SQLAlchemy async setup with PostgreSQL
+- Brief model: id, created_at, data_source_name, final_brief, overall_health, anomalies (JSON), processing_time_seconds, agent_severities (JSON)
+- init_db() and get_db() functions
+- DATABASE_URL from environment variable
+
+9. backend/api/routes.py
+- POST /api/analyze — accepts JSON data + data_source_name, runs pipeline, saves to DB, returns result
+- POST /api/upload-csv — accepts CSV file upload, parses it, runs pipeline
+- GET /api/briefs — returns last 10 briefs from DB
+- GET /api/briefs/{id} — returns specific brief
+- GET /api/health — returns {"status": "ok"}
+
+10. backend/main.py
+- FastAPI app setup
+- CORS enabled for all origins
+- Include routes from api/routes.py
+- On startup: call init_db()
+- Run on port 8000
+
+11. backend/requirements.txt
+fastapi==0.111.0
+uvicorn==0.30.1
+httpx==0.27.0
+pydantic==2.7.4
+python-dotenv==1.0.1
+asyncpg==0.29.0
+sqlalchemy==2.0.31
+pandas==2.2.2
+python-multipart==0.0.9
+
+Also create backend/.env.example:
+FIREWORKS_API_KEY=your_key_here
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/pulseboard
+
+Write complete, production-ready code. No placeholders. Every function fully implemented.

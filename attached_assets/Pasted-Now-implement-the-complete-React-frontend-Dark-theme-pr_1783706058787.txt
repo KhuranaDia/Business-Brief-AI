@@ -1,0 +1,61 @@
+Now implement the complete React frontend. Dark theme, professional, clean.
+
+1. frontend/package.json
+Dependencies:
+- react, react-dom (18)
+- react-router-dom (6)
+- axios
+- tailwindcss, autoprefixer, postcss
+- @heroicons/react
+- recharts (for any charts)
+- vite (build tool)
+
+2. frontend/tailwind.config.js
+- Dark mode enabled
+- Custom colors: brand red #C8102E, dark bg #0F0F1A, card bg #1A1A2E
+
+3. frontend/src/main.jsx
+- React root render
+- Router setup
+
+4. frontend/src/App.jsx
+- Dark background full screen
+- Routes: / → Dashboard, /upload → UploadData
+- Top navbar with "PulseBoard" logo in red and nav links
+
+5. frontend/src/components/UploadData.jsx
+- Dark card UI
+- Two options: Upload CSV file OR paste JSON data in textarea
+- Input for "Business Name"
+- Big "Generate Brief" button in red
+- On submit: POST to /api/analyze or /api/upload-csv
+- Show loading state: "Agents are analyzing your data..." with animated dots
+- On success: redirect to Dashboard
+
+6. frontend/src/components/AgentActivity.jsx
+- Shows 4 agent cards in a 2x2 grid
+- Each card: agent name, icon, status (idle/running/complete), severity badge
+- Agents: Revenue 💰, Behavior 👥, Error ⚠️, Sentiment 💬
+- Animate cards when running — pulsing border in red
+- Show severity: critical=red, warning=yellow, normal=green
+
+7. frontend/src/components/BriefCard.jsx
+- Large card showing the final brief
+- Top: STATUS badge (CRITICAL/WARNING/STABLE/GOOD) with color coding
+- Body: final brief text rendered with proper line breaks and bold headers
+- Bottom row: processing time, data source name, generated timestamp
+- "Copy Brief" button
+
+8. frontend/src/components/Dashboard.jsx
+- Shows last 10 briefs from GET /api/briefs
+- Each brief as a clickable card showing: status badge, primary story, timestamp, data source
+- Click → expand to show full BriefCard
+- Empty state: "No briefs yet. Upload your data to get started."
+- Auto-refresh every 30 seconds
+
+All components must:
+- Use dark theme (bg-gray-900, bg-gray-800 for cards)
+- Use Tailwind CSS only, no custom CSS files
+- Be fully functional, no placeholders
+- Handle loading and error states
+- Look like a real product, not a tutorial project

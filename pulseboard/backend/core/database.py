@@ -1,2 +1,87 @@
-# Database: PostgreSQL connection and models
-# TODO: implement database setup
+"""Database setup for PulseBoard.
+
+Async SQLAlchemy 2.0 setup backed by PostgreSQL (asyncpg driver). Exposes the
+``Brief`` model plus ``init_db`` and ``get_db`` helpers.
+"""
+
+from __future__ import annotations
+
+import os
+from datetime import datetime
+from typing import AsyncGenerator
+
+from sqlalchemy import DateTime, Float, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/pulseboard",
+)
+
+# asyncpg does not understand the "postgres://" scheme or "+psycopg" suffixes;
+# normalize to the async driver form.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://", "postgresql+asyncpg://", 1
+    )
+
+engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
+
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine, class_=AsyncSession, expire_on_commit=False
+)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class Brief(Base):
+    """A stored morning brief and its supporting metadata."""
+
+    __tablename__ = "briefs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    data_source_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    final_brief: Mapped[str] = mapped_column(Text, nullable=False)
+    overall_health: Mapped[str] = mapped_column(String(32), nullable=False)
+    anomalies: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    processing_time_seconds: Mapped[float] = mapped_column(Float, nullable=False)
+    agent_severities: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default=dict
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "data_source_name": self.data_source_name,
+            "final_brief": self.final_brief,
+            "overall_health": self.overall_health,
+            "anomalies": self.anomalies,
+            "processing_time_seconds": self.processing_time_seconds,
+            "agent_severities": self.agent_severities,
+        }
+
+
+async def init_db() -> None:
+    """Create tables if they do not yet exist."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency that yields an async database session."""
+    async with AsyncSessionLocal() as session:
+        yield session
