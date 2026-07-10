@@ -7,11 +7,12 @@ import AgentActivity from "../components/AgentActivity.jsx";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { motion } from "framer-motion";
 
+const CRISIS_SOURCE = "Acme SaaS — Crisis Scenario";
 const CRISIS_DATA = {
-  revenue: { yesterday: 8450, day_before: 9800, weekly_avg: 9200, currency: "USD", refunds_today: 1240, failed_payments: 89 },
-  users: { active_today: 1243, active_yesterday: 1891, churned_this_week: 47, new_signups_today: 12 },
-  errors: { error_rate_percent: 8.3, normal_error_rate: 0.8, checkout_failures: 143, api_timeouts: 67, peak_error_time: "11:30 PM" },
-  sentiment: { support_tickets_today: 28, normal_tickets_per_day: 6, nps_score: 31, nps_last_month: 58, top_complaint: "checkout not working on mobile" }
+  revenue: { yesterday: 8450, day_before: 9800, weekly_avg: 9200, refunds_today: 1240 },
+  users: { active_today: 1243, active_yesterday: 1891, churned_this_week: 47 },
+  errors: { error_rate_percent: 8.3, normal_error_rate: 0.8, checkout_failures: 143 },
+  sentiment: { support_tickets_today: 28, nps_score: 31, nps_last_month: 58 }
 };
 
 function StatCard({ label, value, sub, color, trend = 0 }) {
@@ -49,7 +50,7 @@ export default function Dashboard() {
     setDemoResult(null);
     setDemoPhase("analyzing");
     try {
-      const res = await generate(CRISIS_DATA, "Acme SaaS — Crisis Scenario");
+      const res = await generate(CRISIS_DATA, CRISIS_SOURCE);
       setDemoResult(res);
       setDemoPhase("done");
       setTimeout(async () => {
