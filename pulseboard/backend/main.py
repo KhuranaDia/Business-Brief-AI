@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -14,10 +16,20 @@ from core.database import init_db
 
 load_dotenv()
 
+logger = logging.getLogger("pulseboard")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize the database on startup."""
+    """Initialize the database and validate required configuration on startup."""
+    if not os.environ.get("FIREWORKS_API_KEY"):
+        # Surface the misconfiguration loudly at boot instead of letting every
+        # /api/analyze and /api/upload-csv request fail with an opaque 502.
+        logger.warning(
+            "FIREWORKS_API_KEY is not set. Brief generation (/api/analyze and "
+            "/api/upload-csv) will fail until it is provided. Set it as an "
+            "environment variable or in a .env file before generating briefs."
+        )
     await init_db()
     yield
 
