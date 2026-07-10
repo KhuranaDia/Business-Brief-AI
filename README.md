@@ -9,7 +9,7 @@ Built for **AMD Developer Hackathon ACT II — Track 3 Unicorn Track**
 ---
 
 ## Live Demo
-🔗 **[Try PulseBoard Live](https://PulseBoard.replit.app)**
+🔗 **[Try PulseBoard Live](https://PulseBoard.replit.app/pulseboard/)**
 
 ### See It In 30 Seconds
 1. Click **"+ New Analysis"**
