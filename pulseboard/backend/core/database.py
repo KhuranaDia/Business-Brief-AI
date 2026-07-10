@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from datetime import datetime
 from typing import AsyncGenerator
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from sqlalchemy import DateTime, Float, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
@@ -19,21 +20,54 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-DATABASE_URL = os.environ.get(
+_RAW_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
     "postgresql+asyncpg://postgres:postgres@localhost:5432/pulseboard",
 )
 
-# asyncpg does not understand the "postgres://" scheme or "+psycopg" suffixes;
-# normalize to the async driver form.
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
-elif DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace(
+# asyncpg needs the "postgresql+asyncpg://" scheme. Managed providers (Replit)
+# hand out "postgresql://"; some tools use the bare "postgres://" alias. Rewrite
+# either to the async driver form. A URL that already names a driver
+# (e.g. "postgresql+asyncpg://" for the Docker default) is left untouched.
+if _RAW_DATABASE_URL.startswith("postgres://"):
+    _RAW_DATABASE_URL = _RAW_DATABASE_URL.replace(
+        "postgres://", "postgresql+asyncpg://", 1
+    )
+elif _RAW_DATABASE_URL.startswith("postgresql://"):
+    _RAW_DATABASE_URL = _RAW_DATABASE_URL.replace(
         "postgresql://", "postgresql+asyncpg://", 1
     )
 
-engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
+
+def _normalize_url(url: str) -> tuple[str, dict]:
+    """Strip libpq-style query params asyncpg can't accept and derive SSL.
+
+    Managed Postgres providers (e.g. Replit/Neon) append params like
+    ``?sslmode=require`` to ``DATABASE_URL``. asyncpg does not understand
+    ``sslmode``/``channel_binding``/``sslrootcert`` as connect kwargs, so we
+    remove them from the URL and translate SSL intent into ``connect_args``.
+    A plain local URL (e.g. Docker) has no such params and is left untouched.
+    """
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query)
+    connect_args: dict = {}
+
+    sslmode = query.pop("sslmode", [None])[0]
+    query.pop("channel_binding", None)
+    query.pop("sslrootcert", None)
+
+    if sslmode in ("require", "verify-ca", "verify-full", "prefer", "allow"):
+        connect_args["ssl"] = True
+
+    cleaned = parsed._replace(query=urlencode(query, doseq=True))
+    return urlunparse(cleaned), connect_args
+
+
+DATABASE_URL, _CONNECT_ARGS = _normalize_url(_RAW_DATABASE_URL)
+
+engine = create_async_engine(
+    DATABASE_URL, echo=False, pool_pre_ping=True, connect_args=_CONNECT_ARGS
+)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine, class_=AsyncSession, expire_on_commit=False

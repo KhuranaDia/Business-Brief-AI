@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 
-// Base URL from env, defaulting to relative "" so requests go through the Vite
-// dev proxy and the production nginx reverse proxy (both forward /api to the
-// backend). Set VITE_API_URL to point at a backend on another origin if needed.
-const API_BASE = import.meta.env.VITE_API_URL || "";
+// Base URL for API requests. Defaults to the app's served prefix (BASE_URL,
+// without trailing slash) so requests are prefixed correctly behind a
+// path-based reverse proxy: "" for the Docker build (base "/"), or e.g.
+// "/pulseboard" behind Replit's proxy. Both the Vite dev proxy and the
+// production nginx reverse proxy forward the (prefixed) /api path to the
+// backend. Set VITE_API_URL to point at a backend on another origin if needed.
+const API_BASE =
+  import.meta.env.VITE_API_URL ?? import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const client = axios.create({ baseURL: API_BASE });
 

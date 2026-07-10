@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `pulseboard/` (workspace root, NOT a pnpm package) — standalone Dockerized full-stack app:
+  - `pulseboard/backend/` — FastAPI + asyncpg, routes under `/api` (uvicorn on port 8000)
+  - `pulseboard/frontend/` — React + Vite + Tailwind (npm, not pnpm), served via the `pulseboard` artifact
+- `artifacts/pulseboard/.replit-artifact/artifact.toml` — thin runner: its dev/build commands `cd` into `pulseboard/frontend`. The scaffolded react-vite files in `artifacts/pulseboard/src` are unused.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **PulseBoard runs live in Replit AND stays Docker-compatible.** Frontend reads `BASE_PATH` (URL prefix, `/` for Docker, `/pulseboard/` in Replit) and `PORT` from env. Base path flows through: Vite `base`, React Router `basename` (`import.meta.env.BASE_URL`), and axios `baseURL` in `useApi.js`.
+- **Python backend is INTERNAL** on `localhost:8000` — it is NOT on the shared proxy (avoids colliding with `api-server` which owns `/api`). The Vite dev proxy forwards the base-prefixed `/pulseboard/api/*` → backend `/api/*` (strips the prefix).
+- `pulseboard/backend/core/database.py` normalizes `DATABASE_URL` for asyncpg: strips libpq-only params (`sslmode`, `channel_binding`, `sslrootcert`) and sets `connect_args={"ssl": True}` when SSL is required.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+PulseBoard turns raw business data (pasted JSON or a CSV upload) into a plain-English morning brief using Fireworks AI. Requires `FIREWORKS_API_KEY` for brief generation; the UI loads and lists past briefs without it.
 
 ## User preferences
 
