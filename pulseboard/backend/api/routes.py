@@ -14,7 +14,7 @@ import io
 from typing import Any
 
 import pandas as pd
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,7 +72,9 @@ async def analyze(
 
 @router.post("/upload-csv")
 async def upload_csv(
-    file: UploadFile = File(...), db: AsyncSession = Depends(get_db)
+    file: UploadFile = File(...),
+    data_source_name: str = Form(default=""),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Accept a CSV upload, parse it, and run the pipeline."""
     if not file.filename or not file.filename.lower().endswith(".csv"):
@@ -90,7 +92,7 @@ async def upload_csv(
         raise HTTPException(status_code=400, detail="The uploaded CSV is empty.")
 
     data = df.to_dict(orient="records")
-    data_source_name = file.filename
+    data_source_name = data_source_name.strip() or file.filename
 
     try:
         result = await run_pipeline(data, data_source_name)

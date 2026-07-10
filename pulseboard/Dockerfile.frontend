@@ -1,2 +1,25 @@
-# Dockerfile for the React frontend
-# TODO: define build steps
+# Dockerfile for the PulseBoard React frontend (build with Vite, serve with nginx)
+
+# --- Build stage ---
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+# Install dependencies first for better layer caching.
+COPY frontend/package.json ./package.json
+RUN npm install
+
+# Copy source and build the production bundle.
+COPY frontend/ ./
+RUN npm run build
+
+# --- Serve stage ---
+FROM nginx:alpine
+
+# Custom nginx config: serve the SPA and proxy /api to the backend.
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

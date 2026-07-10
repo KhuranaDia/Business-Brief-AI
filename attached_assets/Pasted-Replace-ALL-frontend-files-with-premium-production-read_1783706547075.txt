@@ -1,0 +1,213 @@
+Replace ALL frontend files with premium, production-ready React code.
+
+Design philosophy: Dark, minimal, data-first. Every element intentional. 
+No gradients everywhere. No bloat. Clean like Linear or Vercel's dashboard.
+
+GLOBAL STYLES & CONFIG:
+
+frontend/tailwind.config.js:
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  theme: {
+    extend: {
+      colors: {
+        bg: {
+          primary: "#080810",
+          secondary: "#0F0F1A", 
+          card: "#12121F",
+          border: "#1E1E3A",
+        },
+        brand: {
+          red: "#E8173D",
+          redHover: "#FF1F47",
+        },
+        text: {
+          primary: "#F0F0FF",
+          muted: "#6B7280",
+          subtle: "#374151",
+        },
+        status: {
+          critical: "#EF4444",
+          warning: "#F59E0B",
+          stable: "#10B981",
+          good: "#3B82F6",
+        }
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+      },
+      animation: {
+        pulse_slow: "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        fade_in: "fadeIn 0.5s ease-in-out",
+        slide_up: "slideUp 0.4s ease-out",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+    },
+  },
+  plugins: [],
+};
+
+frontend/index.html:
+Add Inter and JetBrains Mono from Google Fonts in the head.
+Title: "PulseBoard — Your business, explained."
+
+frontend/src/main.jsx:
+Standard React 18 root render with BrowserRouter.
+
+frontend/src/App.jsx:
+- Full dark background bg-[#080810] min-h-screen
+- Top navbar: 
+  * Left: "PULSE" in white bold + "BOARD" in #E8173D bold, small dot separator, tagline "autonomous business intelligence" in muted small text
+  * Right: "Upload Data" button — outlined red border, red text, hover fills red
+  * Border bottom: 1px solid #1E1E3A
+- Routes: "/" → Dashboard, "/upload" → UploadPage
+- No footer clutter
+
+frontend/src/pages/UploadPage.jsx:
+Create this as a new file.
+
+Layout: Centered, max-w-2xl, padding top 10vh
+
+TOP SECTION:
+- Small label: "STEP 1 OF 1" in muted uppercase tracking-widest text-xs
+- H1: "Connect your data." — large, white, bold
+- Subtitle: "Drop in your business metrics. PulseBoard handles the rest." — muted
+
+DATA INPUT SECTION (card with border #1E1E3A, bg #0F0F1A, rounded-xl, p-8):
+- Business name input: 
+  * Label: "Business Name" — muted small
+  * Input: dark bg #080810, border #1E1E3A, text white, rounded-lg, p-3
+  * Placeholder: "e.g. Acme SaaS"
+  * Focus: border color #E8173D
+
+- Toggle between "Upload CSV" and "Paste JSON":
+  * Two pill buttons side by side — active one has bg #E8173D text white, inactive is outlined
+  
+- CSV mode: 
+  * Drag & drop zone — dashed border #1E1E3A, rounded-xl, p-12, centered
+  * Icon: upload arrow (use SVG inline)
+  * Text: "Drop your CSV here" bold white, "or click to browse" muted below
+  * Hover: border color #E8173D, slight bg tint
+  * After file selected: show filename with green checkmark
+  
+- JSON mode:
+  * Textarea: dark bg, monospace font, h-48, full width
+  * Placeholder: sample JSON structure as placeholder text
+
+SAMPLE DATA BUTTON:
+- Below the upload zone: "Try with sample data →" — text-sm, text brand red, no bg, hover underline
+- Clicking this fills in pre-built sample business data showing a revenue drop scenario
+
+SUBMIT BUTTON:
+- Full width, bg #E8173D, text white, bold, rounded-lg, p-4, text-lg
+- Text: "Generate Morning Brief"
+- Hover: bg #FF1F47, slight scale-up transform
+- Loading state: "Analyzing your data..." with spinning ring animation — button disabled, opacity 70%
+
+ON SUBMIT:
+- Don't navigate away immediately
+- Show inline loading: agents activating one by one
+- Then navigate to "/" with the result
+
+frontend/src/pages/Dashboard.jsx:
+Create as new file.
+
+If no briefs yet:
+- Empty state centered: large muted text "No briefs yet."
+- Subtext: "Upload your business data to generate your first morning brief."
+- Big red button: "Upload Data →" 
+
+If briefs exist:
+TOP STATS BAR (4 cards in a row, border bottom):
+- Total Briefs Generated
+- Last Brief: timestamp
+- Average Processing Time  
+- Last Status: badge with color
+
+BRIEFS LIST:
+- Each brief as a card (bg #0F0F1A, border #1E1E3A, rounded-xl, p-6, hover border #E8173D transition)
+- Card layout:
+  * Top row: STATUS badge left + timestamp right (muted small)
+  * Middle: "primary story" text — white, text-lg, font-medium, line-clamp-2
+  * Bottom row: data source name (muted) + "View Full Brief →" red text right
+- Click card → expand to show full brief inline (animate slide down)
+- Auto-refresh every 30s
+
+frontend/src/components/AgentActivity.jsx:
+This is the WOW moment component. Show during loading.
+
+Full screen overlay OR inline section showing 4 agent cards.
+
+Layout: 2x2 grid on desktop, 1 col on mobile
+
+Each agent card (bg #0F0F1A, border #1E1E3A, rounded-xl, p-6):
+- Agent icon (SVG, 32px): 
+  * Revenue: $ symbol
+  * Behavior: users icon
+  * Error: warning triangle  
+  * Sentiment: chat bubble
+- Agent name: white bold
+- Status: "IDLE" → "ANALYZING..." → "COMPLETE"
+- When ANALYZING: border animates with red pulsing glow (box-shadow animation)
+- When COMPLETE: border turns green, checkmark appears
+- Severity badge when complete: CRITICAL (red) / WARNING (yellow) / NORMAL (green)
+- One line insight preview when complete: muted small text
+
+Bottom: 
+- "Synthesis agent activating..." appears after all 4 complete
+- Then final brief fades in
+
+frontend/src/components/BriefCard.jsx:
+The final output. This must look premium.
+
+Full card (bg #0F0F1A, border #1E1E3A, rounded-2xl, p-8):
+
+TOP BAR:
+- Left: STATUS pill badge — CRITICAL (bg red/10 text red border red), WARNING (amber), STABLE (green), GOOD (blue)
+- Right: timestamp + data source name (muted)
+
+BRIEF CONTENT:
+- Parse the brief text and render with formatting:
+  * Lines starting with ** → render as bold section headers in brand red
+  * Bullet points → proper list with red dot markers
+  * Regular lines → white text, line-height relaxed
+- Font: Inter, text-base, leading-relaxed
+- Max readable width
+
+BOTTOM BAR:
+- Left: "Generated in Xs" — muted small with lightning icon
+- Right: "Copy Brief" button — outlined, small, copies text to clipboard, shows "Copied!" for 2s
+
+frontend/src/components/AnomalyBadge.jsx:
+Small reusable badge for anomalies.
+- Props: type, severity, description
+- CRITICAL: red bg/10, red border, red text
+- WARNING: yellow variant
+- INFO: blue variant
+
+frontend/src/hooks/useApi.js:
+Custom hook for all API calls:
+- useBriefs() — fetches GET /api/briefs, auto-refreshes every 30s
+- useGenerateBrief(data) — posts to /api/analyze, returns loading/result/error states
+- useUploadCSV(file) — posts to /api/upload-csv
+
+Base URL from env: VITE_API_URL or default http://localhost:8000
+
+All components must:
+- Handle loading states gracefully
+- Handle error states with user-friendly messages in red
+- Be fully responsive (mobile first)
+- Use only Tailwind classes
+- Have smooth transitions (transition-all duration-200)
+- Never use any external UI library — pure Tailwind only

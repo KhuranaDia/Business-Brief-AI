@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from core.fireworks_client import call_llm_json
+from core.fireworks_client import as_dict, call_llm_json
 
 AGENT_NAME = "error"
 
@@ -57,7 +57,9 @@ async def run(data: Any) -> dict[str, Any]:
         "}\n\n"
         f"RELIABILITY SIGNALS:\n{json.dumps(signals, default=str)}"
     )
-    analysis = await call_llm_json(analyze_prompt, system_prompt=SYSTEM_PROMPT)
+    analysis = as_dict(
+        await call_llm_json(analyze_prompt, system_prompt=SYSTEM_PROMPT)
+    )
 
     severity = str(analysis.get("severity", "normal")).lower()
     if severity not in {"critical", "warning", "normal"}:

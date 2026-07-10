@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from core.fireworks_client import call_llm, call_llm_json
+from core.fireworks_client import as_dict, call_llm, call_llm_json
 
 AGENT_NAME = "synthesis"
 
@@ -72,7 +72,9 @@ async def run(
         "}\n\n"
         f"AGENT FINDINGS:\n{findings_json}"
     )
-    patterns = await call_llm_json(pattern_prompt, system_prompt=SYSTEM_PROMPT)
+    patterns = as_dict(
+        await call_llm_json(pattern_prompt, system_prompt=SYSTEM_PROMPT)
+    )
 
     # Step 2: write the final plain-English brief.
     status_label = overall_health.replace("_", " ").upper()

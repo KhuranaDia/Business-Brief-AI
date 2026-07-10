@@ -72,7 +72,7 @@ export default function UploadData() {
       }
       setSubmitting(true);
       try {
-        await uploadCsv(file);
+        await uploadCsv(file, businessName.trim());
         navigate("/");
       } catch (err) {
         setError(

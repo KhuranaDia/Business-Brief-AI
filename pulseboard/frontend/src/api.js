@@ -12,9 +12,10 @@ const api = axios.create({
 export const analyzeData = (data, dataSourceName) =>
   api.post("/api/analyze", { data, data_source_name: dataSourceName });
 
-export const uploadCsv = (file) => {
+export const uploadCsv = (file, dataSourceName) => {
   const form = new FormData();
   form.append("file", file);
+  if (dataSourceName) form.append("data_source_name", dataSourceName);
   return api.post("/api/upload-csv", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });

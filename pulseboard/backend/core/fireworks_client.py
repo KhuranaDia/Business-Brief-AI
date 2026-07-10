@@ -161,3 +161,13 @@ async def call_llm_json(
         response_format={"type": "json_object"},
     )
     return _extract_json(content)
+
+
+def as_dict(value: Any) -> dict[str, Any]:
+    """Return ``value`` if it is a dict, otherwise an empty dict.
+
+    LLM JSON output is not guaranteed to be a JSON object — a model may return a
+    list or a bare string even in JSON mode. Callers that expect a mapping use
+    this to avoid ``AttributeError`` on ``.get`` when the shape is unexpected.
+    """
+    return value if isinstance(value, dict) else {}
