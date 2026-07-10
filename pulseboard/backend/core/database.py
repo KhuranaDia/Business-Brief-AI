@@ -95,6 +95,10 @@ class Brief(Base):
     agent_severities: Mapped[dict] = mapped_column(
         JSONB, nullable=False, default=dict
     )
+    patterns: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    likely_root_cause: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    watch_list: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    agent_results: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -106,6 +110,10 @@ class Brief(Base):
             "anomalies": self.anomalies,
             "processing_time_seconds": self.processing_time_seconds,
             "agent_severities": self.agent_severities,
+            "patterns": self.patterns,
+            "likely_root_cause": self.likely_root_cause,
+            "watch_list": self.watch_list,
+            "agent_results": self.agent_results,
         }
 
 

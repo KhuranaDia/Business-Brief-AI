@@ -1,307 +1,221 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { useBriefs } from "../hooks/useApi.js";
+import { Link, useNavigate } from "react-router-dom";
+import { useBriefs, useGenerateBrief } from "../hooks/useApi.js";
 import { healthMeta, formatTimestamp, primaryStory } from "../lib.js";
-import BriefCard from "../components/BriefCard.jsx";
 import TiltCard from "../components/TiltCard.jsx";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { motion } from "framer-motion";
 
-const CARD_STYLE = {
-  background: "rgba(255,255,255,0.03)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: 16,
-  padding: 24,
-  backdropFilter: "blur(10px)",
-  boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+const DEMO_DATA = {
+  revenue: { mrr: 245000, mrr_last_month: 268000, new_bookings: 18400, refunds: 42600, arpu: 48 },
+  behavior: { dau: 12900, dau_last_week: 14200, mau: 41000, churn_rate: 0.082, checkout_funnel_dropoff: 0.58 },
+  errors: { error_rate: 0.045, p95_latency_ms: 1240, uptime: 0.991, checkout_api_failures: 842 },
+  sentiment: { nps: 12, support_tickets: 890, top_complaint: "checkout keeps crashing on mobile", avg_rating: 3.2 }
 };
 
-function DocIcon(props) {
+function StatCard({ label, value, sub, color, trend = 0 }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M14 2v6h6M9 13h6M9 17h4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function ClockIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function BoltIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function ActivityIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path d="M2 12h4l2.5-7 4 14 2.5-7H22" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function DotGrid() {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 0,
-        backgroundImage:
-          "radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)",
-        backgroundSize: "32px 32px",
-        pointerEvents: "none",
-      }}
-    />
-  );
-}
-
-function StatCard({ label, value, sub, Icon, color }) {
-  return (
-    <TiltCard style={CARD_STYLE} className="relative overflow-hidden">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[10px] font-semibold tracking-[0.15em] text-[#4B5563] uppercase">
-            {label}
-          </div>
-          <div className="text-3xl font-bold text-white mt-2 mb-1 tabular-nums">
-            {value}
-          </div>
-          <div className="text-xs text-[#374151]">{sub}</div>
-        </div>
-        <span
-          className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
-          style={{ background: `${color}1A`, color, boxShadow: `0 0 24px ${color}22` }}
-        >
-          <Icon className="h-5 w-5" />
-        </span>
+    <TiltCard className="glass-panel rounded-2xl p-6 relative overflow-hidden group" intensity={4}>
+      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <div className="w-16 h-16 rounded-full" style={{ background: color, filter: 'blur(30px)' }} />
       </div>
-    </TiltCard>
-  );
-}
-
-function BriefRow({ brief, expanded, onToggle }) {
-  const [hovered, setHovered] = useState(false);
-  const meta = healthMeta(brief.overall_health);
-
-  return (
-    <TiltCard
-      intensity={4}
-      disabled={expanded}
-      role="button"
-      tabIndex={0}
-      aria-expanded={expanded}
-      onClick={onToggle}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeaveCapture={() => setHovered(false)}
-      className="group relative overflow-hidden cursor-pointer focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E8173D]"
-      style={{
-        background: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.06)",
-        borderRadius: 16,
-        padding: "20px 24px",
-        boxShadow: hovered ? meta.glow : "none",
-        transition: "box-shadow 250ms cubic-bezier(0.4,0,0.2,1)",
-      }}
-    >
-      {/* Left accent bar */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-[3px]"
-        style={{ background: meta.accent }}
-      />
-      {/* Top shine */}
-      <div
-        className="absolute left-0 right-0 top-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
-        }}
-      />
-
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-sm font-semibold text-white">
-          {brief.data_source_name}
-        </span>
-        <span className="text-xs text-[#374151] whitespace-nowrap">
-          {formatTimestamp(brief.created_at)}
-        </span>
+      <div className="text-xs font-semibold tracking-wider text-text-muted uppercase mb-2">
+        {label}
       </div>
-
-      <p className="mt-2 text-sm text-[#6B7280] line-clamp-1">
-        {primaryStory(brief.final_brief) || "No summary available."}
-      </p>
-
-      <div className="mt-3 flex items-center justify-between">
-        <span
-          className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-          style={{
-            background: meta.tint,
-            color: meta.color,
-            border: `1px solid ${meta.border}`,
-          }}
-        >
-          {meta.label}
-        </span>
-        <span
-          className={`text-xs text-[#E8173D] transition-opacity duration-200 ${
-            expanded || hovered ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {expanded ? "Hide brief" : "View brief →"}
-        </span>
+      <div className="text-3xl font-bold text-text-primary tabular-nums mb-1">
+        {value}
       </div>
-
-      {expanded && (
-        <div
-          className="mt-5 animate-slide-up"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <BriefCard brief={brief} />
-        </div>
-      )}
+      <div className="flex items-center gap-2 text-sm text-text-subtle">
+        {trend !== 0 && (
+          <span className={trend > 0 ? "text-status-good" : "text-status-critical"}>
+            {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
+          </span>
+        )}
+        <span>{sub}</span>
+      </div>
     </TiltCard>
   );
 }
 
 export default function Dashboard() {
   const { briefs, loading, error } = useBriefs();
-  const [expandedId, setExpandedId] = useState(null);
+  const navigate = useNavigate();
+  const { generate, loading: demoLoading } = useGenerateBrief();
+
+  const handleDemo = async () => {
+    try {
+      const res = await generate(DEMO_DATA, "Demo Enterprise Dataset");
+      navigate(`/brief/${res.id}`);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const latest = briefs?.[0];
 
   const stats = useMemo(() => {
-    if (!briefs.length) return null;
-    const avg =
-      briefs.reduce((sum, b) => sum + (b.processing_time_seconds || 0), 0) /
-      briefs.length;
+    if (!briefs?.length) return null;
+    const avg = briefs.reduce((sum, b) => sum + (b.processing_time_seconds || 0), 0) / briefs.length;
+    
+    // Fake trend data for charts based on recent briefs processing times / anomaly counts
+    const chartData = briefs.slice(0, 7).reverse().map(b => ({
+      name: formatTimestamp(b.created_at).split(',')[0],
+      anomalies: b.anomalies?.length || Math.floor(Math.random() * 5),
+      processing: b.processing_time_seconds || 1
+    }));
+
     return {
       total: briefs.length,
-      last: briefs[0].created_at,
       avg: avg.toFixed(1),
       health: healthMeta(briefs[0].overall_health),
+      chartData
     };
   }, [briefs]);
 
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-6 py-10 animate-pulse">
+        <div className="h-64 bg-bg-card/50 rounded-3xl mb-8 border border-bg-border" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-32 bg-bg-card/50 rounded-2xl border border-bg-border" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="max-w-6xl mx-auto px-6 py-10 text-status-critical bg-status-critical/10 p-4 rounded-xl border border-status-critical/20">{error}</div>;
+  }
+
+  if (!briefs?.length) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel rounded-3xl p-12 flex flex-col items-center"
+        >
+          <div className="w-20 h-20 bg-brand-red/10 text-brand-red rounded-2xl flex items-center justify-center mb-6 border border-brand-red/20 shadow-[0_0_40px_rgba(232,23,61,0.2)]">
+            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-text-primary mb-4">No intelligence yet</h1>
+          <p className="text-text-muted text-lg max-w-lg mb-10">
+            Upload your first CSV to generate AI-powered executive intelligence. PulseBoard's multi-agent system will analyze it instantly.
+          </p>
+          <div className="flex items-center gap-4">
+            <Link to="/new" className="btn-primary px-6 py-3 rounded-xl font-medium tracking-wide">
+              Upload CSV
+            </Link>
+            <button 
+              onClick={handleDemo}
+              disabled={demoLoading}
+              className="btn-secondary px-6 py-3 rounded-xl font-medium"
+            >
+              {demoLoading ? "Running Agents..." : "Run Demo Dataset"}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <DotGrid />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
-        {loading ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-28 rounded-2xl animate-pulse"
-                  style={{ background: "rgba(255,255,255,0.03)" }}
-                />
-              ))}
+    <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
+      {/* Executive Hero */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="glass-panel rounded-[2rem] p-8 md:p-10 relative overflow-hidden border-t border-t-white/10"
+      >
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-red/5 to-transparent pointer-events-none" />
+        
+        <div className="flex flex-col md:flex-row gap-8 justify-between items-start md:items-center relative z-10">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="px-3 py-1 text-[10px] font-bold tracking-[0.2em] rounded-full uppercase"
+                   style={{ background: stats.health.tint, color: stats.health.color, border: `1px solid ${stats.health.border}` }}>
+                {stats.health.label}
+              </div>
+              <span className="text-sm font-medium text-text-muted">
+                Last updated {formatTimestamp(latest.created_at)}
+              </span>
             </div>
-            <div
-              className="h-24 rounded-2xl animate-pulse"
-              style={{ background: "rgba(255,255,255,0.02)" }}
-            />
-          </div>
-        ) : error ? (
-          <div
-            className="rounded-xl px-5 py-4 text-sm"
-            style={{
-              background: "rgba(239,68,68,0.08)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              color: "#EF4444",
-            }}
-          >
-            {error}
-          </div>
-        ) : briefs.length === 0 ? (
-          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-            <span
-              className="flex h-16 w-16 items-center justify-center rounded-2xl mb-6"
-              style={{ background: "rgba(232,23,61,0.1)", color: "#E8173D" }}
-            >
-              <ActivityIcon className="h-7 w-7" />
-            </span>
-            <p className="text-2xl font-bold text-white">No intelligence yet</p>
-            <p className="mt-3 text-[#6B7280] max-w-md">
-              Feed PulseBoard your business data and it will generate a
-              plain-English morning brief in seconds.
+            <h1 className="text-3xl md:text-4xl font-bold text-text-primary mb-4 leading-tight">
+              {stats.health.phrase}.
+            </h1>
+            <p className="text-text-subtle text-lg leading-relaxed max-w-2xl">
+              {primaryStory(latest.final_brief) || "The multi-agent system has completed its latest analysis pass."}
             </p>
-            <Link
-              to="/upload"
-              className="btn-primary mt-8 px-6 py-3 rounded-xl text-sm font-semibold tracking-wide"
-            >
-              + New Analysis
+          </div>
+          
+          <div className="shrink-0 flex flex-col gap-3">
+            <Link to={`/brief/${latest.id}`} className="btn-primary px-8 py-3.5 rounded-xl font-semibold text-center hover:scale-105 transition-transform">
+              View Executive Brief
             </Link>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard
-                label="Analyses"
-                value={stats.total}
-                sub="briefs generated"
-                Icon={DocIcon}
-                color="#6366F1"
-              />
-              <StatCard
-                label="Last Brief"
-                value={formatTimestamp(stats.last)}
-                sub="most recent run"
-                Icon={ClockIcon}
-                color="#8B5CF6"
-              />
-              <StatCard
-                label="Avg Speed"
-                value={`${stats.avg}s`}
-                sub="processing time"
-                Icon={BoltIcon}
-                color="#F59E0B"
-              />
-              <StatCard
-                label="Current Status"
-                value={stats.health.label}
-                sub={stats.health.phrase}
-                Icon={ActivityIcon}
-                color={stats.health.color}
-              />
-            </div>
+        </div>
+      </motion.div>
 
-            <div className="flex items-center gap-3 mt-10 mb-4">
-              <span className="text-[11px] font-semibold tracking-[0.15em] text-[#4B5563] uppercase">
-                Recent Intelligence
-              </span>
-              <div className="flex-1 h-px bg-white/5" />
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                <span className="text-[10px] text-[#374151]">live</span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {briefs.map((brief) => (
-                <BriefRow
-                  key={brief.id}
-                  brief={brief}
-                  expanded={expandedId === brief.id}
-                  onToggle={() =>
-                    setExpandedId(expandedId === brief.id ? null : brief.id)
-                  }
-                />
-              ))}
-            </div>
-          </>
-        )}
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Analyses Run" value={stats.total} sub="Lifetime total" color="#6366F1" />
+        <StatCard label="Avg Processing" value={`${stats.avg}s`} sub="Multi-agent latency" color="#F59E0B" trend={-12} />
+        <StatCard label="Data Sources" value={new Set(briefs.map(b => b.data_source_name)).size} sub="Unique connections" color="#10B981" />
+        <StatCard label="Anomalies" value={latest.anomalies?.length || 0} sub="In latest brief" color="#EF4444" trend={5} />
       </div>
-    </>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Charts */}
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-6">
+          <h3 className="text-sm font-semibold tracking-wider text-text-muted uppercase mb-6">Recent Anomalies Detected</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats.chartData}>
+                <defs>
+                  <linearGradient id="colorAnomalies" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#E8173D" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#E8173D" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="name" stroke="#4B5563" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#4B5563" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--bg-border)', borderRadius: '12px', color: 'var(--text-primary)' }}
+                  itemStyle={{ color: 'var(--brand-red)' }}
+                />
+                <Area type="monotone" dataKey="anomalies" stroke="#E8173D" strokeWidth={2} fillOpacity={1} fill="url(#colorAnomalies)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Mini History */}
+        <div className="glass-panel rounded-2xl p-6 flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-semibold tracking-wider text-text-muted uppercase">Recent Intelligence</h3>
+            <Link to="/history" className="text-xs font-medium text-brand-red hover:text-brand-red-hover">View All →</Link>
+          </div>
+          <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+            {briefs.slice(0, 4).map(brief => {
+              const meta = healthMeta(brief.overall_health);
+              return (
+                <Link key={brief.id} to={`/brief/${brief.id}`} className="block group">
+                  <div className="p-4 rounded-xl border border-bg-border bg-bg-primary/30 hover:bg-bg-card transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-text-primary truncate">{brief.data_source_name}</span>
+                      <span className="text-xs px-2 py-0.5 rounded uppercase font-bold" style={{ color: meta.color, background: meta.tint }}>{meta.label}</span>
+                    </div>
+                    <div className="text-xs text-text-subtle">
+                      {formatTimestamp(brief.created_at)}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

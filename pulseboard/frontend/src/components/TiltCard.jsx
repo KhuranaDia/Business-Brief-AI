@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { use3DTilt } from "../hooks/use3DTilt.js";
+import { motion } from "framer-motion";
 
-// A card wrapper that applies a subtle mouse-tracking 3D tilt on hover.
-// Tilt is automatically suppressed for touch devices and users who prefer
-// reduced motion, and can be frozen via `disabled` (e.g. while expanded).
 export default function TiltCard({
   intensity = 8,
   disabled = false,
@@ -17,9 +15,7 @@ export default function TiltCard({
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return undefined;
-    const mq = window.matchMedia(
-      "(prefers-reduced-motion: reduce), (pointer: coarse)"
-    );
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)");
     const update = () => setReduce(mq.matches);
     update();
     mq.addEventListener?.("change", update);
@@ -28,8 +24,6 @@ export default function TiltCard({
 
   const noTilt = disabled || reduce;
 
-  // Whenever tilt turns off (card expands, reduced motion, touch), snap the
-  // element back to neutral so it never stays visually skewed.
   useEffect(() => {
     if (noTilt && ref.current) {
       ref.current.style.transform =
@@ -39,7 +33,7 @@ export default function TiltCard({
   }, [noTilt, ref]);
 
   return (
-    <div
+    <motion.div
       ref={ref}
       onMouseMove={noTilt ? undefined : handleMouseMove}
       onMouseLeave={noTilt ? undefined : handleMouseLeave}
@@ -48,6 +42,6 @@ export default function TiltCard({
       {...rest}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

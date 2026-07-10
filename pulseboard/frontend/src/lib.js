@@ -1,6 +1,3 @@
-// Shared display helpers: map backend health/severity values to labels and the
-// colors / gradients the premium UI uses via inline styles.
-
 export function hexA(hex, alpha) {
   const h = hex.replace("#", "");
   const r = parseInt(h.slice(0, 2), 16);
@@ -72,7 +69,6 @@ export function formatTimestamp(iso) {
   }
 }
 
-// Extract a one-line "primary story" from a brief for list previews.
 export function primaryStory(text) {
   if (!text) return "";
   const lines = text.split("\n").map((l) => l.trim());

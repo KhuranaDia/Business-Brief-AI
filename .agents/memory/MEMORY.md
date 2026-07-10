@@ -1,1 +1,1 @@
-- [PulseBoard on Replit](pulseboard-replit-integration.md) — standalone Docker app (pulseboard/) runs live via a thin artifact runner; keeps Docker base path `/`, backend internal on :8000, asyncpg URL normalization.
+- [Tailwind v3 @apply opacity gotcha](tailwind-v3-apply-opacity.md) — custom-color `/opacity` inside @apply 500s index.css and blanks the whole PulseBoard frontend; use rgba/CSS vars instead.

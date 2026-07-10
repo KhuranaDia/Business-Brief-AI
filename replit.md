@@ -35,7 +35,11 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Product
 
-PulseBoard turns raw business data (pasted JSON or a CSV upload) into a plain-English morning brief using Fireworks AI. Requires `FIREWORKS_API_KEY` for brief generation; the UI loads and lists past briefs without it.
+PulseBoard turns raw business data (pasted JSON or a CSV upload) into a plain-English executive brief using a multi-agent Fireworks AI pipeline (Revenue, Behavior, Error, Sentiment + a Synthesis agent). Requires `FIREWORKS_API_KEY` for brief generation; the UI loads and lists past briefs without it.
+
+Frontend is a full dark-premium AI SaaS (standalone Vite + React JSX at `pulseboard/frontend`, react-router-dom v6, Tailwind v3, framer-motion, recharts, jspdf). Pages: `/` Dashboard, `/new` (CSV upload + JSON paste + animated agent pipeline), `/history` (search + filters), `/brief/:id` (parsed brief viewer + business-impact + AI chat + PDF/MD/JSON exports), `/analytics`, `/settings`. All API access goes through hooks in `src/hooks/useApi.js` — do NOT bypass them or edit their `API_BASE` base-path logic.
+
+Backend endpoints (additive, pipeline untouched): `GET /api/briefs/{id}/impact` (business-impact "Why should I care?" via `agents/impact_agent.py`) and `POST /api/chat` (executive assistant). Brief rows persist `patterns`, `likely_root_cause`, `watch_list`, `agent_results` (JSONB).
 
 ## User preferences
 
@@ -43,7 +47,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- **Tailwind v3 `@apply` + custom-color opacity blanks the app.** In `pulseboard/frontend/src/index.css`, never write `<theme-color>/<opacity>` on `ring-*`/`shadow-*`/`border-*` inside `@apply` (e.g. `@apply focus:ring-brand-red/50`) — PostCSS 500s `index.css` and the page renders blank white. Use `--tw-ring-color: rgba(...)` / explicit `box-shadow` instead. Slash-opacity is fine in JSX `className`, just not in `@apply`.
+- **Frontend must call the API only through `src/hooks/useApi.js`.** Do not add axios/fetch elsewhere or edit the `API_BASE` base-path logic (breaks the `/pulseboard/` vs `/` Docker routing).
+- **Fireworks rate-limits (HTTP 429).** Each `/api/analyze` fires ~10 LLM calls; rapid repeated analyses exhaust the quota and return 429/502. Back off rather than retrying in a tight loop.
+- **Never render `final_brief` (LLM output) via `dangerouslySetInnerHTML`.** It's model-influenced; render as React elements (see `parseBriefContent` in `BriefViewer.jsx`).
 
 ## Pointers
 

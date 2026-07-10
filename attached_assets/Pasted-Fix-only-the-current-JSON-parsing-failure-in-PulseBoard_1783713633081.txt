@@ -1,0 +1,120 @@
+Fix only the current JSON parsing failure in PulseBoard. Do not redesign the UI, do not refactor unrelated code, and do not modify working API routes.
+
+Current frontend error:
+"Analysis failed: Could not parse JSON from LLM output"
+
+The Fireworks API call succeeds, but the model sometimes returns:
+- JSON inside markdown code fences
+- text before or after the JSON
+- truncated JSON
+- malformed JSON
+- valid JSON with minor formatting issues
+
+Goal:
+Make the analysis pipeline resilient so malformed LLM output never crashes the request.
+
+Please inspect the existing Fireworks client and the exact code path that parses agent responses. Apply the smallest safe fix.
+
+Requirements:
+
+1. Create one reusable helper, preferably in:
+backend/core/fireworks_client.py
+
+Suggested function:
+extract_json_response(raw_text: str) -> dict
+
+2. The helper must:
+- reject empty responses
+- strip whitespace
+- remove ```json and ``` code fences
+- locate the first valid JSON object or array in the response
+- safely parse nested JSON
+- avoid using a naive first "{" and last "}" approach if possible
+- validate that the parsed result is a dict when a dict is expected
+
+3. Prefer Fireworks structured JSON output if the current model/API supports it.
+When making the request, use JSON response mode or a JSON schema where supported.
+Do not switch models unless the existing model cannot support structured output.
+
+4. Strengthen the system prompt for every agent:
+"Return only one valid JSON object. Do not use markdown, code fences, comments, explanations, or text outside the JSON."
+
+5. If the first response cannot be parsed:
+- retry only once
+- use a repair prompt containing the malformed response
+- ask the model to return corrected valid JSON only
+- do not rerun the entire analysis pipeline
+- do not make more than one repair API call
+
+6. Add a deterministic local fallback after the retry fails.
+The API must still return HTTP 200 with a usable result instead of crashing.
+
+Use a fallback structure compatible with the existing frontend and pipeline, for example:
+
+{
+  "status": "warning",
+  "severity": "warning",
+  "summary": "The AI response could not be parsed, so a local fallback analysis was used.",
+  "insight": "The AI response could not be parsed, so a local fallback analysis was used.",
+  "anomalies": [],
+  "confidence": 0,
+  "fallback": true,
+  "provider_mode": "local_fallback"
+}
+
+Adapt this to the exact schema expected by each existing agent. Do not return missing keys that could break synthesis or frontend rendering.
+
+7. Never expose raw LLM output, stack traces, API keys, or internal parsing errors to the frontend.
+Frontend message should be:
+"AI formatting failed, so PulseBoard used a fallback analysis."
+
+8. Log only safe diagnostic information:
+- agent name
+- response length
+- parse success or failure
+- retry attempted
+- fallback used
+
+Do not log the API key.
+Avoid logging the full business dataset.
+Only log the raw response in development mode if absolutely necessary.
+
+9. Preserve the existing working behavior:
+- existing sample data
+- POST /api/analyze
+- current dashboard response schema
+- current Fireworks integration
+- existing analysis history
+
+10. Keep API usage minimal:
+- maximum one normal Fireworks call per agent under the current architecture
+- maximum one repair call only for the specific response that failed
+- no extra validation calls
+- no model-based JSON validation after successful parsing
+- do not increase concurrency
+- do not redesign or refactor unrelated files
+
+11. Add small local tests for the parser using these cases:
+- plain valid JSON
+- JSON inside ```json code fences
+- explanatory text before JSON
+- explanatory text after JSON
+- braces inside JSON string values
+- nested JSON objects and arrays
+- empty response
+- incomplete JSON
+- malformed JSON
+
+12. After implementing, run one test using the existing sample data through POST /api/analyze.
+
+Show me only:
+- files changed
+- exact root cause
+- whether the test passed
+- HTTP status
+- provider_mode
+- retry_count
+- fallback_used
+- first 300 characters of final_brief
+
+Do not make any other product, styling, dependency, architecture, or database changes.

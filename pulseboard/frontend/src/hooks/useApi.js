@@ -77,6 +77,85 @@ export function useGenerateBrief() {
   return { generate, loading, result, error };
 }
 
+/** Fetches a single brief by id via GET /api/briefs/:id. */
+export function useBrief(id) {
+  const [brief, setBrief] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async (briefId) => {
+    if (briefId == null) return;
+    setLoading(true);
+    setError("");
+    try {
+      const { data } = await client.get(`/api/briefs/${briefId}`);
+      setBrief(data);
+      return data;
+    } catch (err) {
+      setError(friendly(err));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (id != null) load(id);
+  }, [id, load]);
+
+  return { brief, loading, error, reload: load };
+}
+
+/** Generates a quantified business impact for a brief via GET /api/briefs/:id/impact. */
+export function useImpact() {
+  const [impact, setImpact] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const fetchImpact = useCallback(async (briefId) => {
+    if (briefId == null) return;
+    setLoading(true);
+    setError("");
+    setImpact(null);
+    try {
+      const { data } = await client.get(`/api/briefs/${briefId}/impact`);
+      setImpact(data);
+      return data;
+    } catch (err) {
+      setError(friendly(err));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { impact, loading, error, fetchImpact };
+}
+
+/** Executive AI assistant chat via POST /api/chat. */
+export function useChat() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const ask = useCallback(async (question, briefId = null) => {
+    setLoading(true);
+    setError("");
+    try {
+      const body = { question };
+      if (briefId != null) body.brief_id = briefId;
+      const { data } = await client.post("/api/chat", body);
+      return data?.answer ?? "";
+    } catch (err) {
+      setError(friendly(err));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { ask, loading, error };
+}
+
 /** Generates a brief from a CSV upload via POST /api/upload-csv. */
 export function useUploadCSV() {
   const [loading, setLoading] = useState(false);

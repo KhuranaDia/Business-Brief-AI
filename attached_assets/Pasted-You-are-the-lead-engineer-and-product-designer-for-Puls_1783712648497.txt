@@ -1,0 +1,421 @@
+You are the lead engineer and product designer for PulseBoard, an AI-powered Executive Intelligence Platform.
+
+The backend AI pipeline already works. DO NOT modify the working AI pipeline unless required for bug fixes.
+
+Our goal is to make PulseBoard look and behave like a polished startup product suitable for winning the AMD Unicorn Track.
+
+FIRST: Fix Functional Issues
+CSV Upload
+
+The "Upload CSV / New Analysis" workflow is currently broken.
+
+Find and fix the complete upload flow.
+
+Requirements:
+
+Upload CSV should always work.
+Validate CSV before upload.
+Show helpful validation errors.
+Display upload progress.
+Automatically trigger analysis after successful upload.
+Disable duplicate submissions while processing.
+Accept drag & drop and click-to-upload.
+Display uploaded filename.
+Allow replacing uploaded CSV.
+Remember the last uploaded file during the session.
+If upload fails, allow retry without refreshing.
+
+After upload:
+
+Processing →
+AI Agents Running →
+Analysis Complete
+
+The entire workflow must function end-to-end.
+
+Analysis Experience
+
+Replace generic loading spinners with a professional AI workflow.
+
+Show a live pipeline:
+
+✓ CSV uploaded
+
+↓
+
+Revenue Agent
+
+Running...
+
+↓
+
+Behavior Agent
+
+Running...
+
+↓
+
+Error Agent
+
+Running...
+
+↓
+
+Sentiment Agent
+
+Running...
+
+↓
+
+AI Executive Brief Generated
+
+Each step should animate as it completes.
+
+Dashboard Redesign
+
+Completely redesign the dashboard.
+
+Style inspiration:
+
+Linear
+Vercel
+Stripe Dashboard
+Raycast
+Notion AI
+
+Dark premium theme.
+
+Glassmorphism.
+
+Soft shadows.
+
+Smooth hover animations.
+
+Rounded cards.
+
+Professional typography using Inter.
+
+Navigation
+
+Remove unnecessary navigation items.
+
+Keep navbar minimal.
+
+Add:
+
+Dashboard
+
+History
+
+Analytics
+
+Settings
+
+Dark/Light toggle
+
+User profile menu
+
+Hero Section
+
+Replace the current cards with an Executive Summary section.
+
+Display:
+
+Business Health
+
+Current Status
+
+Confidence Score
+
+Primary Story
+
+Last Analysis
+
+Processing Time
+
+AI Verdict
+
+This should immediately explain what happened.
+
+Business Health Card
+
+Instead of showing only WARNING,
+
+Display:
+
+Business Health
+
+🟠 Needs Attention
+
+Confidence
+
+97%
+
+Primary Story
+
+Revenue dropped because checkout failures caused customer abandonment.
+
+Analysis History
+
+Replace the single Recent Intelligence card.
+
+Create a searchable history.
+
+Include:
+
+Date
+
+Severity
+
+Title
+
+Processing Time
+
+Status
+
+Search bar
+
+Filters:
+
+Today
+
+7 Days
+
+30 Days
+
+Custom
+
+Brief Viewer
+
+The AI brief must never be displayed as one long paragraph.
+
+Automatically parse sections.
+
+Render beautifully.
+
+Sections:
+
+STATUS
+
+EXECUTIVE SUMMARY
+
+WHAT CHANGED
+
+ROOT CAUSE
+
+BUSINESS IMPACT
+
+RECOMMENDED ACTIONS
+
+WATCH LIST
+
+Highlight:
+
+percentages
+
+currency
+
+growth
+
+decline
+
+errors
+
+dates
+
+KPIs
+
+Use colored badges.
+
+Business Metrics
+
+Add beautiful analytics cards.
+
+Revenue Trend
+
+Error Rate
+
+Customer Activity
+
+Support Volume
+
+AI Confidence
+
+Anomalies Detected
+
+Critical Events
+
+Average Processing Time
+
+Use lightweight charts.
+
+AI Agent Transparency
+
+Show every AI agent.
+
+Revenue Agent
+
+Behavior Agent
+
+Error Agent
+
+Sentiment Agent
+
+Synthesis Agent
+
+Each should display:
+
+Status
+
+Runtime
+
+Findings
+
+Confidence
+
+Last execution
+
+AI Chat
+
+Add an Executive AI Assistant.
+
+Users can ask:
+
+Why did revenue drop?
+
+Explain this anomaly.
+
+Compare with last week.
+
+What should I do first?
+
+Generate a board meeting summary.
+
+Generate investor update.
+
+Generate email to leadership.
+
+Generate incident report.
+
+The assistant should answer using previous analyses.
+
+Executive Reports
+
+Allow exporting:
+
+PDF
+
+Markdown
+
+JSON
+
+CSV
+
+Copy Summary
+
+Share Link
+
+Notifications
+
+Show alerts.
+
+Critical
+
+Warning
+
+Healthy
+
+Unread badge.
+
+Empty State
+
+If no analyses exist,
+
+Display:
+
+Upload your first CSV to generate AI-powered executive intelligence.
+
+Include:
+
+Upload CSV button
+
+Example CSV
+
+Demo Dataset
+
+Demo Mode
+
+Add a Demo Mode.
+
+One click loads realistic enterprise data.
+
+No upload required.
+
+Perfect for judges.
+
+Settings
+
+Allow:
+
+Fireworks API key
+
+Organization name
+
+Theme
+
+Notification preferences
+
+Language
+
+Mobile
+
+Dashboard must be completely responsive.
+
+Polish
+
+Improve every animation.
+
+Improve spacing.
+
+Improve typography.
+
+Improve colors.
+
+Improve loading states.
+
+Improve hover effects.
+
+Improve transitions.
+
+No overflowing elements.
+
+No raw JSON visible.
+
+Professional SaaS quality.
+
+Do NOT break the existing backend.
+
+Keep all API endpoints working.
+
+Fix any broken frontend integration.
+
+Ensure CSV upload works end-to-end.
+
+Final Goal
+
+Make PulseBoard look like a polished AI startup that could realistically raise venture funding.
+
+It should impress judges within the first 30 seconds of opening the application.
+
+One extra feature I'd add (which most teams won't have)
+
+Since you're competing in the Unicorn Track, add a "Why should I care?" section after every AI brief.
+
+Example:
+
+Business Impact
+
+Estimated revenue at risk: $18,400
+Customers affected: 21%
+Priority: Resolve within 2 hours
+If unresolved, projected loss in 24h: $72,000

@@ -1,97 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { severityMeta } from "../lib.js";
-
-function RevenueIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path d="M12 1v22" strokeLinecap="round" />
-      <path
-        d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function UsersIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function WarningIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path
-        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M12 9v4M12 17h.01" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ChatIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path
-        d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CheckIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}>
-      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import { motion } from "framer-motion";
 
 const AGENTS = [
-  { key: "revenue", name: "Revenue Agent", color: "#10B981", Icon: RevenueIcon },
-  { key: "behavior", name: "Behavior Agent", color: "#6366F1", Icon: UsersIcon },
-  { key: "error", name: "Error Agent", color: "#F59E0B", Icon: WarningIcon },
-  { key: "sentiment", name: "Sentiment Agent", color: "#8B5CF6", Icon: ChatIcon },
+  { key: "revenue", name: "Revenue", color: "#10B981" },
+  { key: "behavior", name: "Behavior", color: "#6366F1" },
+  { key: "error", name: "Error", color: "#F59E0B" },
+  { key: "sentiment", name: "Sentiment", color: "#8B5CF6" },
 ];
 
-/**
- * AgentActivity — the loading "wow" moment.
- *
- * @param {boolean} active - pipeline is running (agents start analyzing).
- * @param {object|null} result - the analyze response; when present, agents
- *   complete one by one and reveal their severity + insight.
- */
 export default function AgentActivity({ active, result }) {
   const [started, setStarted] = useState(0);
   const [completed, setCompleted] = useState(0);
 
   useEffect(() => {
-    if (!active) return undefined;
+    if (!active) return;
     setStarted(0);
-    const id = setInterval(() => {
-      setStarted((n) => (n < AGENTS.length ? n + 1 : n));
-    }, 550);
+    const id = setInterval(() => setStarted(n => (n < AGENTS.length ? n + 1 : n)), 600);
     return () => clearInterval(id);
   }, [active]);
 
   useEffect(() => {
-    if (!result) {
-      setCompleted(0);
-      return undefined;
-    }
-    const id = setInterval(() => {
-      setCompleted((n) => (n < AGENTS.length ? n + 1 : n));
-    }, 450);
+    if (!result) { setCompleted(0); return; }
+    const id = setInterval(() => setCompleted(n => (n < AGENTS.length ? n + 1 : n)), 400);
     return () => clearInterval(id);
   }, [result]);
 
@@ -100,130 +31,65 @@ export default function AgentActivity({ active, result }) {
   const allComplete = Boolean(result) && completed >= AGENTS.length;
 
   return (
-    <div className="animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {AGENTS.map((agent, i) => {
-          const isComplete = Boolean(result) && i < completed;
-          const isAnalyzing = !isComplete && started > i;
-          const status = isComplete
-            ? "COMPLETE"
-            : isAnalyzing
-              ? "ANALYZING"
-              : "QUEUED";
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {AGENTS.map((agent, i) => {
+        const isComplete = Boolean(result) && i < completed;
+        const isAnalyzing = !isComplete && started > i;
+        const insight = agentResults[agent.key]?.insight;
+        const severity = severities[agent.key];
+        const sevMeta = severity ? severityMeta(severity) : null;
 
-          const insight = agentResults[agent.key]?.insight;
-          const severity = severities[agent.key];
-          const sevMeta = severity ? severityMeta(severity) : null;
-
-          const cardStyle = {
-            background: "rgba(255,255,255,0.02)",
-            borderRadius: 16,
-            padding: 20,
-            border: "1px solid rgba(255,255,255,0.06)",
-          };
-          if (isComplete) {
-            cardStyle.border = "1px solid rgba(16,185,129,0.2)";
-            cardStyle.boxShadow = "0 0 24px rgba(16,185,129,0.08)";
-          }
-
-          return (
-            <div
-              key={agent.key}
-              style={cardStyle}
-              className={`transition-all duration-300 ${
-                isAnalyzing ? "animate-border-pulse" : ""
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
-                    style={{
-                      background: isComplete
-                        ? "rgba(16,185,129,0.1)"
-                        : `${agent.color}1A`,
-                      color: isComplete ? "#10B981" : agent.color,
-                    }}
-                  >
-                    {isComplete ? (
-                      <CheckIcon className="h-5 w-5" />
-                    ) : (
-                      <agent.Icon className="h-5 w-5" />
-                    )}
-                  </span>
-                  <div>
-                    <div className="text-sm font-semibold text-[#F0F0FA]">
-                      {agent.name}
-                    </div>
-                    <div
-                      className="text-[10px] font-semibold tracking-[0.15em] uppercase mt-0.5"
-                      style={{
-                        color: isComplete
-                          ? "#10B981"
-                          : isAnalyzing
-                            ? "#E8173D"
-                            : "#374151",
-                      }}
-                    >
-                      {status}
-                    </div>
-                  </div>
+        return (
+          <motion.div
+            key={agent.key}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`glass-panel rounded-2xl p-5 relative overflow-hidden ${isAnalyzing ? 'animate-pulse' : ''}`}
+            style={{ borderColor: isComplete ? 'rgba(16,185,129,0.3)' : '' }}
+          >
+            {isComplete && <div className="absolute top-0 right-0 w-32 h-32 bg-status-stable/10 rounded-full blur-3xl -mr-10 -mt-10" />}
+            
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg" style={{ background: `${agent.color}20`, color: agent.color }}>
+                  {agent.name[0]}
                 </div>
-
-                {isComplete && sevMeta && (
-                  <span
-                    className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shrink-0"
-                    style={{
-                      background: sevMeta.tint,
-                      color: sevMeta.color,
-                      border: `1px solid ${sevMeta.border}`,
-                    }}
-                  >
-                    {sevMeta.label}
-                  </span>
-                )}
+                <div>
+                  <h3 className="font-semibold text-text-primary">{agent.name} Agent</h3>
+                  <p className="text-xs font-medium tracking-wider uppercase" style={{ color: isComplete ? '#10B981' : isAnalyzing ? '#E8173D' : '#6B7280' }}>
+                    {isComplete ? "COMPLETE" : isAnalyzing ? "ANALYZING..." : "QUEUED"}
+                  </p>
+                </div>
               </div>
-
-              {isComplete && insight && (
-                <p className="mt-4 text-xs text-[#6B7280] leading-relaxed line-clamp-2 animate-fade-in">
-                  {insight}
-                </p>
+              
+              {isComplete && sevMeta && (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded" style={{ background: sevMeta.tint, color: sevMeta.color }}>
+                  {sevMeta.label}
+                </span>
               )}
             </div>
-          );
-        })}
-      </div>
-
-      <div
-        className="rounded-xl p-4 mt-4 flex items-center gap-3"
-        style={{
-          background: "rgba(232,23,61,0.05)",
-          border: "1px solid rgba(232,23,61,0.15)",
-        }}
-      >
-        <span
-          className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0"
-          style={{ background: "rgba(232,23,61,0.12)", color: "#E8173D" }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-        <div>
-          <div className="text-sm font-semibold">
-            {allComplete ? (
-              <span className="gradient-text">Synthesizing insights…</span>
-            ) : (
-              <span className="text-[#F0F0FA]">Synthesis Agent</span>
+            
+            {isComplete && insight && (
+              <p className="text-sm text-text-muted mt-2 relative z-10 line-clamp-2">{insight}</p>
             )}
-          </div>
-          <div className="text-xs text-[#374151]">
-            {allComplete
-              ? "Connecting the dots across all four agents"
-              : "Waiting for specialists to report in"}
-          </div>
+          </motion.div>
+        );
+      })}
+
+      <motion.div 
+        className="md:col-span-2 glass-panel rounded-2xl p-6 flex items-center gap-4 border border-brand-red/20"
+        animate={allComplete ? { borderColor: 'rgba(232,23,61,0.5)', backgroundColor: 'rgba(232,23,61,0.05)' } : {}}
+      >
+        <div className="w-12 h-12 rounded-xl bg-brand-red/10 text-brand-red flex items-center justify-center shrink-0">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         </div>
-      </div>
+        <div>
+          <h3 className="font-semibold text-text-primary text-lg">Synthesis Engine</h3>
+          <p className="text-sm text-text-subtle">
+            {allComplete ? <span className="text-gradient font-medium">Finalizing executive brief...</span> : "Waiting for specialist reports..."}
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }
