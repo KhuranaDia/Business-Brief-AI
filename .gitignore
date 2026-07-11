@@ -47,3 +47,20 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Internal development files (public hackathon submission)
+.agents/
+.agents/**
+.replit-cache/
+node_modules/
+dist/
+build/
+coverage/
+__pycache__/
+.pytest_cache/
+*.log
+
+# Environment files — never commit real secrets; keep the templates
+.env
+.env.*
+!.env.example

@@ -86,6 +86,17 @@ npm install
 npm run dev            # http://localhost:5173, proxies /api to :8000
 ```
 
+## Demo Dataset
+
+Ready-made demo data lives in [`../sample-data/`](../sample-data/) at the repository root:
+
+- **`demo-business.csv`** — upload it on the **New Analysis** page (CSV upload)
+- **`demo-business.json`** — paste its contents into the **JSON paste** box on the same page
+
+Both contain the same "business crisis" scenario (revenue drop, checkout failures,
+support-ticket spike), so you can instantly test PulseBoard's multi-agent analysis
+without preparing your own data.
+
 ## API endpoints
 
 | Method | Path               | Description                                  |

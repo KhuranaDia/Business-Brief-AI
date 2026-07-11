@@ -1,0 +1,24 @@
+metric,category,value,previous_value,unit,period,notes
+daily_revenue,revenue,8450,9800,USD,yesterday,13.8% drop from previous day
+weekly_avg_revenue,revenue,9200,9200,USD,weekly_average,baseline reference
+monthly_recurring_revenue,revenue,245000,267800,USD,this_month,MRR dropped 8.6%
+refunds_today,revenue,1240,320,USD,yesterday,287% spike in refunds
+failed_payments,revenue,89,12,count,yesterday,checkout failures causing revenue loss
+new_bookings,revenue,18400,31200,USD,yesterday,41% drop in new bookings
+active_users_today,users,1243,1891,count,yesterday,34% DAU drop
+active_users_yesterday,users,1891,2100,count,day_before,reference point
+new_signups_today,users,12,34,count,yesterday,65% drop in acquisition
+churned_users_this_week,users,47,8,count,this_week,487% churn spike
+mobile_users_affected,users,834,0,count,yesterday,mobile checkout broken
+retention_rate,users,67,89,percent,this_week,22 point drop
+error_rate_percent,errors,8.3,0.8,percent,yesterday,10x normal error rate
+checkout_failures,errors,143,11,count,yesterday,mobile checkout endpoint failing
+api_timeouts,errors,67,5,count,yesterday,payment gateway timeouts
+peak_error_time,errors,2330,0,time_hhmm,yesterday,errors started at 11:30 PM
+affected_endpoint,errors,1,0,flag,yesterday,/api/checkout/mobile endpoint
+server_response_time_ms,errors,4200,180,milliseconds,yesterday,23x slower than normal
+support_tickets_today,sentiment,28,6,count,yesterday,366% above normal
+nps_score,sentiment,31,58,score,this_month,27 point NPS crash
+negative_twitter_mentions,sentiment,14,2,count,yesterday,customers tweeting about checkout
+top_complaint,sentiment,1,0,flag,yesterday,checkout not working on mobile
+refund_requests,sentiment,23,3,count,yesterday,customers demanding refunds
