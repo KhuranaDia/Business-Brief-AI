@@ -1,0 +1,49 @@
+{
+  "revenue": {
+    "daily_revenue_yesterday": 8450,
+    "daily_revenue_day_before": 9800,
+    "weekly_average_revenue": 9200,
+    "monthly_recurring_revenue": 245000,
+    "mrr_last_month": 267800,
+    "refunds_today": 1240,
+    "refunds_yesterday": 320,
+    "failed_payments": 89,
+    "new_bookings_today": 18400,
+    "new_bookings_yesterday": 31200,
+    "currency": "USD"
+  },
+  "users": {
+    "active_users_today": 1243,
+    "active_users_yesterday": 1891,
+    "new_signups_today": 12,
+    "new_signups_yesterday": 34,
+    "churned_users_this_week": 47,
+    "churned_users_last_week": 8,
+    "mobile_users_affected": 834,
+    "retention_rate_this_week": 67,
+    "retention_rate_last_week": 89
+  },
+  "errors": {
+    "error_rate_percent": 8.3,
+    "normal_error_rate_percent": 0.8,
+    "checkout_failures_count": 143,
+    "checkout_failures_yesterday": 11,
+    "api_timeouts": 67,
+    "api_timeouts_yesterday": 5,
+    "peak_error_time": "11:30 PM",
+    "affected_endpoint": "/api/checkout/mobile",
+    "avg_server_response_ms": 4200,
+    "normal_response_ms": 180
+  },
+  "sentiment": {
+    "support_tickets_today": 28,
+    "support_tickets_normal_per_day": 6,
+    "nps_score_this_month": 31,
+    "nps_score_last_month": 58,
+    "negative_twitter_mentions": 14,
+    "negative_mentions_yesterday": 2,
+    "top_complaint": "checkout not working on mobile",
+    "refund_requests_today": 23,
+    "refund_requests_yesterday": 3
+  }
+}

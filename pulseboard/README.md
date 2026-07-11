@@ -48,21 +48,23 @@ pulseboard/
 
 ## Quick start (Docker)
 
-1. Set your Fireworks API key (create a `.env` file next to `docker-compose.yml`):
+1. Copy the env template and fill in your Fireworks API key:
 
-   ```
-   FIREWORKS_API_KEY=your_key_here
+   ```bash
+   cp .env.example .env
+   # edit .env and set FIREWORKS_API_KEY
    ```
 
 2. Build and run the whole stack:
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
 3. Open the app:
    - Frontend: http://localhost:3000
    - Backend API docs: http://localhost:8000/docs
+   - Health check: http://localhost:8000/api/health
 
 ## Local development (without Docker)
 
